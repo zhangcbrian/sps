@@ -1,0 +1,8 @@
+{
+  "/api/submit/route": "/api/submit",
+  "/_not-found/page": "/_not-found",
+  "/history/page": "/history",
+  "/page": "/",
+  "/specs/page": "/specs",
+  "/submit/page": "/submit"
+}
