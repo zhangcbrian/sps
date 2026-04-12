@@ -69,6 +69,13 @@ export async function interpret(
     throw new Error("Unexpected response type from LLM");
   }
 
-  const draft = JSON.parse(content.text) as DraftSpec;
+  let draft: DraftSpec;
+  try {
+    draft = JSON.parse(content.text) as DraftSpec;
+  } catch {
+    throw new Error(
+      `LLM returned invalid JSON. Raw response:\n${content.text.slice(0, 500)}`
+    );
+  }
   return draft;
 }

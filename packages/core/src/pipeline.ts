@@ -56,7 +56,8 @@ export async function submitRequirement(
 
   const errors = validateSpec(
     { ...draft, filePath: organized.filePath } as SpecFile,
-    config.schema
+    config.schema,
+    config.categories
   );
   if (errors.length > 0) {
     throw new Error(

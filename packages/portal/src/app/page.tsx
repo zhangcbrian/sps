@@ -29,7 +29,7 @@ export default async function DashboardPage() {
   const uncategorized: typeof allRules = [];
 
   for (const rule of allRules) {
-    const cat = (rule as SpecRule & { category?: string }).category;
+    const cat = rule.category;
     if (cat && categories.find((c) => c.id === cat)) {
       if (!byCategory.has(cat)) byCategory.set(cat, []);
       byCategory.get(cat)!.push(rule);

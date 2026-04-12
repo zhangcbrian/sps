@@ -73,7 +73,12 @@ Respond with ONLY the JSON object.`,
     return { matches: [] };
   }
 
-  const llmResult = JSON.parse(content.text) as { matches: LlmMatch[] };
+  let llmResult: { matches: LlmMatch[] };
+  try {
+    llmResult = JSON.parse(content.text) as { matches: LlmMatch[] };
+  } catch {
+    return { matches: [] };
+  }
 
   const ruleById = new Map<
     string,
