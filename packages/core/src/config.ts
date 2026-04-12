@@ -21,6 +21,26 @@ export const DEFAULT_CONFIG: SpecflowConfig = {
     id_format: "REQ-{DOMAIN}-{MODULE}-{NN}",
   },
   domains: {},
+  categories: [
+    {
+      id: "business",
+      label: "Business",
+      description: "Affects users, revenue, or growth",
+      color: "#00E5A0",
+    },
+    {
+      id: "engineering",
+      label: "Engineering",
+      description: "System correctness, reliability, maintainability",
+      color: "#4B9EFF",
+    },
+    {
+      id: "security",
+      label: "Security",
+      description: "Data protection, abuse prevention, compliance",
+      color: "#FF4B4B",
+    },
+  ],
   llm: {
     provider: "anthropic",
     model: "claude-sonnet-4-6",

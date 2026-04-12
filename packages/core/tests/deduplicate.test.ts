@@ -31,6 +31,7 @@ vi.mock("@anthropic-ai/sdk", () => ({
 const emptyRule = {
   id: null,
   status: "proposed" as const,
+  category: "business",
   summary: "Apply coupon",
   description: "",
   given: "",

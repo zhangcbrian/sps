@@ -1,11 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+interface Category {
+  id: string;
+  label: string;
+  description: string;
+  color: string;
+}
 
 export default function SubmitPage() {
   const [text, setText] = useState("");
   const [mode, setMode] = useState<"quick" | "guided">("quick");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [category, setCategory] = useState("");
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [status, setStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
   const [result, setResult] = useState<{
     filePath: string;
     branch: string;
@@ -13,9 +24,19 @@ export default function SubmitPage() {
   } | null>(null);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    fetch("/api/categories")
+      .then((r) => r.json())
+      .then((data) => {
+        setCategories(data.categories || []);
+        if (data.categories?.length > 0) setCategory(data.categories[0].id);
+      })
+      .catch(() => {});
+  }, []);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!text.trim()) return;
+    if (!text.trim() || !category) return;
 
     setStatus("loading");
     setError("");
@@ -24,7 +45,7 @@ export default function SubmitPage() {
       const res = await fetch("/api/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: text.trim(), mode }),
+        body: JSON.stringify({ text: text.trim(), mode, category }),
       });
 
       if (!res.ok) {
@@ -65,9 +86,63 @@ export default function SubmitPage() {
             fontSize: "15px",
             fontFamily: "inherit",
             resize: "vertical",
+            boxSizing: "border-box",
           }}
           disabled={status === "loading"}
         />
+
+        {/* Category picker */}
+        <div style={{ marginTop: "16px" }}>
+          <label
+            style={{
+              display: "block",
+              fontSize: "13px",
+              color: "#999",
+              marginBottom: "8px",
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: "0.04em",
+            }}
+          >
+            Why is this needed?
+          </label>
+          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => setCategory(cat.id)}
+                style={{
+                  padding: "10px 16px",
+                  borderRadius: "8px",
+                  border:
+                    category === cat.id
+                      ? `2px solid ${cat.color}`
+                      : "2px solid #333",
+                  backgroundColor:
+                    category === cat.id ? `${cat.color}15` : "#111",
+                  color: category === cat.id ? cat.color : "#999",
+                  cursor: "pointer",
+                  fontWeight: category === cat.id ? 600 : 400,
+                  fontSize: "14px",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                <div>{cat.label}</div>
+                <div
+                  style={{
+                    fontSize: "11px",
+                    fontWeight: 400,
+                    marginTop: "2px",
+                    opacity: 0.7,
+                  }}
+                >
+                  {cat.description}
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div
           style={{
@@ -96,16 +171,24 @@ export default function SubmitPage() {
 
           <button
             type="submit"
-            disabled={!text.trim() || status === "loading"}
+            disabled={!text.trim() || !category || status === "loading"}
             style={{
               marginLeft: "auto",
               padding: "10px 24px",
-              backgroundColor: status === "loading" ? "#333" : "#00E5A0",
+              backgroundColor:
+                !text.trim() || !category
+                  ? "#333"
+                  : status === "loading"
+                    ? "#333"
+                    : "#00E5A0",
               color: "#0a0a0b",
               border: "none",
               borderRadius: "6px",
               fontWeight: 600,
-              cursor: status === "loading" ? "wait" : "pointer",
+              cursor:
+                !text.trim() || !category || status === "loading"
+                  ? "not-allowed"
+                  : "pointer",
               fontSize: "14px",
               textTransform: "uppercase",
               letterSpacing: "0.04em",

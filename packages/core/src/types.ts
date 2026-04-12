@@ -1,10 +1,18 @@
 // --- Config ---
 
+export interface CategoryConfig {
+  id: string;
+  label: string;
+  description: string;
+  color: string;
+}
+
 export interface SpecflowConfig {
   version: number;
   specs_dir: string;
   schema: SchemaConfig;
   domains: Record<string, string>;
+  categories: CategoryConfig[];
   llm: LlmConfig;
   git: GitConfig;
   dedup: DedupConfig;
@@ -39,6 +47,7 @@ export interface DedupConfig {
 export interface SpecRule {
   id: string | null;
   status: "active" | "proposed" | "deprecated";
+  category: string;
   summary: string;
   description: string;
   given: string;

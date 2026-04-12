@@ -1,8 +1,9 @@
-import type { SpecFile, SchemaConfig } from "./types.js";
+import type { SpecFile, SchemaConfig, CategoryConfig } from "./types.js";
 
 export function validateSpec(
   spec: SpecFile,
-  schema: SchemaConfig
+  schema: SchemaConfig,
+  categories?: CategoryConfig[]
 ): string[] {
   const errors: string[] = [];
   const parsed = spec as unknown as Record<string, unknown>;
@@ -18,6 +19,10 @@ export function validateSpec(
     errors.push('"rules" must be an array.');
     return errors;
   }
+
+  const validCategoryIds = categories
+    ? new Set(categories.map((c) => c.id))
+    : null;
 
   for (let i = 0; i < rules.length; i++) {
     const rule = rules[i] as Record<string, unknown>;
@@ -59,6 +64,18 @@ export function validateSpec(
       errors.push(
         `${prefix}: "status" must be "active", "proposed", or "deprecated".`
       );
+    }
+
+    // Validate category
+    if ("category" in rule && validCategoryIds) {
+      if (
+        typeof rule.category !== "string" ||
+        !validCategoryIds.has(rule.category)
+      ) {
+        errors.push(
+          `${prefix}: "category" must be one of: ${[...validCategoryIds].join(", ")}. Found: "${rule.category}"`
+        );
+      }
     }
 
     for (const field of ["given", "when", "then"]) {

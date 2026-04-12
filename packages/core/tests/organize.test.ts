@@ -11,6 +11,7 @@ const config: SpecflowConfig = {
 const emptyRule = {
   id: null,
   status: "proposed" as const,
+  category: "business",
   summary: "Rule",
   description: "",
   given: "",

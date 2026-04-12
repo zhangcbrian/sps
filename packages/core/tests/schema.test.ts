@@ -5,6 +5,7 @@ import { DEFAULT_CONFIG } from "../src/config.js";
 const validRule = {
   id: "REQ-TEST-MOD-01",
   status: "active" as const,
+  category: "business",
   summary: "Test rule",
   description: "A test rule",
   given: "A user exists",
@@ -88,5 +89,29 @@ describe("validateSpec", () => {
     expect(
       errors.some((e) => e.includes('"added" must be a date string'))
     ).toBe(true);
+  });
+
+  it("reports invalid category when categories are provided", () => {
+    const spec = {
+      domain: "test",
+      module: "mod",
+      description: "Test",
+      rules: [{ ...validRule, category: "nonexistent" }],
+      filePath: "test.yaml",
+    };
+    const errors = validateSpec(spec, DEFAULT_CONFIG.schema, DEFAULT_CONFIG.categories);
+    expect(errors.some((e) => e.includes('"category" must be one of'))).toBe(true);
+  });
+
+  it("accepts valid categories", () => {
+    const spec = {
+      domain: "test",
+      module: "mod",
+      description: "Test module",
+      rules: [{ ...validRule, category: "business" }],
+      filePath: "test.yaml",
+    };
+    const errors = validateSpec(spec, DEFAULT_CONFIG.schema, DEFAULT_CONFIG.categories);
+    expect(errors).toEqual([]);
   });
 });

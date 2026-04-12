@@ -9,6 +9,7 @@ export { buildTrace, appendHistory } from "./trace.js";
 export { submitRequirement } from "./pipeline.js";
 export type {
   SpecflowConfig,
+  CategoryConfig,
   SchemaConfig,
   LlmConfig,
   GitConfig,
