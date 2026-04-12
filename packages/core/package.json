@@ -1,0 +1,26 @@
+{
+  "name": "@specflow/core",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.50.0",
+    "@octokit/rest": "^21.0.0",
+    "simple-git": "^3.27.0",
+    "yaml": "^2.8.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "typescript": "^5.0.0",
+    "vitest": "^4.1.0"
+  }
+}
