@@ -1,14 +1,13 @@
-import { loadConfig, loadSpecs } from "@specflow/core";
+import { loadSpecs } from "@sps/core";
 import { SpecCard } from "@/components/spec-card";
 
 function getRepoRoot(): string {
-  return process.env.SPECFLOW_REPO || process.cwd();
+  return process.env.SPS_REPO || process.cwd();
 }
 
 export default async function SpecsPage() {
   const repoRoot = getRepoRoot();
-  const config = loadConfig(repoRoot);
-  const specs = loadSpecs(repoRoot, config.specs_dir);
+  const specs = loadSpecs(repoRoot);
 
   return (
     <div>
@@ -21,17 +20,16 @@ export default async function SpecsPage() {
       {specs.map((spec) => (
         <div key={spec.filePath} style={{ marginBottom: "32px" }}>
           <h2 style={{ fontSize: "18px", color: "#ccc" }}>
-            {spec.domain}/{spec.module}
+            {spec.spec}
           </h2>
           <p style={{ color: "#666", fontSize: "13px", marginBottom: "12px" }}>
             {spec.filePath}
           </p>
           {spec.rules.map((rule) => (
             <SpecCard
-              key={rule.id || rule.summary}
+              key={rule.id || rule.title}
               rule={rule}
-              domain={spec.domain}
-              module={spec.module}
+              spec={spec.spec}
               trace={spec._trace}
             />
           ))}

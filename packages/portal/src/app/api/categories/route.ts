@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { loadConfig } from "@specflow/core";
+import { loadConfig } from "@sps/core";
 
 function getRepoRoot(): string {
-  return process.env.SPECFLOW_REPO || process.cwd();
+  return process.env.SPS_REPO || process.cwd();
 }
 
 export async function GET() {

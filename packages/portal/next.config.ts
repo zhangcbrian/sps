@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  transpilePackages: ["@specflow/core"],
+  transpilePackages: ["@sps/core"],
 };
 
 export default nextConfig;

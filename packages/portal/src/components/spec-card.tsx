@@ -1,9 +1,8 @@
-import type { SpecRule, TraceBlock, CategoryConfig } from "@specflow/core";
+import type { SpecRule, TraceBlock, CategoryConfig } from "@sps/core";
 
 interface SpecCardProps {
   rule: SpecRule;
-  domain: string;
-  module: string;
+  spec: string;
   trace?: TraceBlock;
   categories?: CategoryConfig[];
 }
@@ -16,8 +15,7 @@ const statusColors: Record<string, string> = {
 
 export function SpecCard({
   rule,
-  domain,
-  module,
+  spec,
   trace,
   categories,
 }: SpecCardProps) {
@@ -52,7 +50,7 @@ export function SpecCard({
               fontFamily: "monospace",
             }}
           >
-            {rule.id || `${domain}/${module}`}
+            {rule.id || spec}
           </span>
           {cat && (
             <span
@@ -84,13 +82,8 @@ export function SpecCard({
       </div>
 
       <h3 style={{ margin: "0 0 4px 0", fontSize: "16px" }}>
-        {rule.business_title || rule.summary}
+        {rule.title}
       </h3>
-      {rule.business_title && (
-        <p style={{ margin: "0 0 12px 0", fontSize: "13px", color: "#888", fontFamily: "monospace" }}>
-          {rule.summary}
-        </p>
-      )}
 
       {rule.given && (
         <div style={{ marginBottom: "8px" }}>
