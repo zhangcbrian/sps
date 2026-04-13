@@ -29,12 +29,19 @@ describe("init command", () => {
     await initCommand();
 
     expect(existsSync(join(dir, ".sps/config.yaml"))).toBe(true);
+    expect(existsSync(join(dir, ".sps/example.sps.yaml"))).toBe(true);
     expect(existsSync(join(dir, "specs"))).toBe(false);
 
     const config = readFileSync(join(dir, ".sps/config.yaml"), "utf-8");
     expect(config).toContain("required_fields");
     expect(config).toContain("anthropic");
     expect(config).not.toContain("specs_dir");
+
+    const example = readFileSync(join(dir, ".sps/example.sps.yaml"), "utf-8");
+    expect(example).toContain("spec:");
+    expect(example).toContain("given:");
+    expect(example).toContain("when:");
+    expect(example).toContain("then:");
 
     process.chdir(origCwd);
   });
