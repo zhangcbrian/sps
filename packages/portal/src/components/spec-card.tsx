@@ -83,9 +83,14 @@ export function SpecCard({
         </span>
       </div>
 
-      <h3 style={{ margin: "0 0 12px 0", fontSize: "16px" }}>
-        {rule.summary}
+      <h3 style={{ margin: "0 0 4px 0", fontSize: "16px" }}>
+        {rule.business_title || rule.summary}
       </h3>
+      {rule.business_title && (
+        <p style={{ margin: "0 0 12px 0", fontSize: "13px", color: "#888", fontFamily: "monospace" }}>
+          {rule.summary}
+        </p>
+      )}
 
       {rule.given && (
         <div style={{ marginBottom: "8px" }}>

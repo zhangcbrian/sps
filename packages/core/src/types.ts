@@ -48,6 +48,7 @@ export interface SpecRule {
   id: string | null;
   status: "active" | "proposed" | "deprecated";
   category: string;
+  business_title: string;
   summary: string;
   description: string;
   given: string;
