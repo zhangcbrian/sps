@@ -27,7 +27,7 @@ export async function submitRequirement(
   context: SubmissionContext
 ): Promise<SubmitResult> {
   const config = loadConfig(repoRoot);
-  const existingSpecs = loadSpecs(repoRoot, config.specs_dir);
+  const existingSpecs = loadSpecs(repoRoot);
   const draft = await interpret(context.text, existingSpecs, config);
   const dedup = await deduplicate(draft, existingSpecs, config);
   const organized = organize(draft, existingSpecs, config);
@@ -45,11 +45,13 @@ export async function submitRequirement(
   }));
 
   const specObj: Record<string, unknown> = {
-    _trace: trace,
-    domain: draft.domain,
-    module: draft.module,
+    spec: draft.spec,
+    title: draft.title,
     description: draft.description,
+    category: draft.category,
+    touches: draft.touches,
     rules: draft.rules,
+    _trace: trace,
   };
 
   const specContent = stringify(specObj, { lineWidth: 100 });
@@ -65,10 +67,7 @@ export async function submitRequirement(
     );
   }
 
-  const slug = `${draft.domain}-${draft.module}`.replace(
-    /[^a-z0-9-]/g,
-    "-"
-  );
+  const slug = draft.spec.replace(/\//g, "-").replace(/[^a-z0-9-]/g, "-");
   const { branch } = await createSpecBranch(
     repoRoot,
     organized.filePath,
@@ -79,7 +78,7 @@ export async function submitRequirement(
 
   const prDescription = buildPrDescription(
     trace,
-    `${draft.domain}/${draft.module}`,
+    draft.spec,
     draft.rules.length
   );
 

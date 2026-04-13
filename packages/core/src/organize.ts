@@ -1,26 +1,31 @@
 import type {
   DraftSpec,
   SpecFile,
-  SpecflowConfig,
+  SpsConfig,
   OrganizeResult,
 } from "./types.js";
 
 export function organize(
   draft: DraftSpec,
   existingSpecs: SpecFile[],
-  config: SpecflowConfig
+  config: SpsConfig
 ): OrganizeResult {
-  const filePath = `${config.specs_dir}/${draft.domain}/${draft.module}.spec.yaml`;
+  // Parse spec identity: "checkout/coupons" → domain="checkout", module="coupons"
+  const parts = draft.spec.split("/");
+  const domain = parts[0];
+  const module = parts.length > 1 ? parts[parts.length - 1] : domain;
 
-  const existingFile = existingSpecs.find(
-    (s) => s.domain === draft.domain && s.module === draft.module
-  );
+  // Generate co-located file path
+  const specPath = parts.join("/");
+  const filePath = `src/${specPath}/${module}.sps.yaml`;
+
+  const existingFile = existingSpecs.find((s) => s.spec === draft.spec);
   const isNewFile = !existingFile;
 
+  // Generate lineage IDs
   const domainAbbrev =
-    config.domains[draft.domain]?.toUpperCase() ||
-    draft.domain.toUpperCase();
-  const moduleAbbrev = draft.module.toUpperCase();
+    config.domains[domain]?.toUpperCase() || domain.toUpperCase();
+  const moduleAbbrev = module.toUpperCase();
   const idPrefix = `REQ-${domainAbbrev}-${moduleAbbrev}-`;
 
   let maxId = 0;
@@ -47,8 +52,7 @@ export function organize(
 
   return {
     filePath,
-    domain: draft.domain,
-    module: draft.module,
+    spec: draft.spec,
     assignedIds,
     isNewFile,
   };

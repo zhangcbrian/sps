@@ -1,9 +1,9 @@
 {
-  "name": "@specflow/cli",
+  "name": "@sps/cli",
   "version": "0.1.0",
   "type": "module",
   "bin": {
-    "specflow": "dist/index.js"
+    "sps": "dist/index.js"
   },
   "files": [
     "dist"
@@ -15,7 +15,7 @@
     "dev": "tsx src/index.ts"
   },
   "dependencies": {
-    "@specflow/core": "workspace:*",
+    "@sps/core": "workspace:*",
     "chalk": "^5.4.0",
     "commander": "^13.0.0",
     "inquirer": "^12.0.0",

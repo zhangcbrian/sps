@@ -21,8 +21,8 @@ describe("createSpecBranch", () => {
   it("creates a branch with the configured prefix", async () => {
     await createSpecBranch(
       "/tmp/repo",
-      "specs/checkout/coupons.spec.yaml",
-      "domain: checkout\nmodule: coupons\n",
+      "src/checkout/coupons/coupons.sps.yaml",
+      "spec: checkout/coupons\n",
       DEFAULT_CONFIG,
       "coupon-support"
     );
@@ -31,7 +31,7 @@ describe("createSpecBranch", () => {
       "spec/coupon-support"
     );
     expect(mockGit.add).toHaveBeenCalledWith(
-      "specs/checkout/coupons.spec.yaml"
+      "src/checkout/coupons/coupons.sps.yaml"
     );
     expect(mockGit.commit).toHaveBeenCalledWith(
       expect.stringContaining("feat(spec):")
@@ -41,7 +41,7 @@ describe("createSpecBranch", () => {
   it("pushes to remote when create_pr is true", async () => {
     await createSpecBranch(
       "/tmp/repo",
-      "specs/checkout/coupons.spec.yaml",
+      "src/checkout/coupons/coupons.sps.yaml",
       "content",
       DEFAULT_CONFIG,
       "coupon-support"
@@ -75,5 +75,6 @@ describe("buildPrDescription", () => {
     expect(desc).toContain("We need discount codes");
     expect(desc).toContain("3 rules");
     expect(desc).toContain("portal");
+    expect(desc).toContain("SPS");
   });
 });

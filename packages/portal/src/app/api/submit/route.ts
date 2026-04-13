@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { submitRequirement } from "@specflow/core";
+import { submitRequirement } from "@sps/core";
 
 function getRepoRoot(): string {
-  return process.env.SPECFLOW_REPO || process.cwd();
+  return process.env.SPS_REPO || process.cwd();
 }
 
 export async function POST(request: Request) {
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
 
     const result = await submitRequirement(getRepoRoot(), {
       text,
-      submittedBy: "portal-user@specflow.dev", // TODO: from auth
+      submittedBy: "portal-user@sps.dev", // TODO: from auth
       source: "portal",
       mode: mode || "quick",
     });

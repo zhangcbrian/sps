@@ -1,22 +1,22 @@
-import { loadConfig, loadSpecs } from "@specflow/core";
-import type { SpecRule, CategoryConfig } from "@specflow/core";
+import { loadConfig, loadSpecs, loadPrinciples } from "@sps/core";
+import type { SpecRule, CategoryConfig } from "@sps/core";
 import { SpecCard } from "@/components/spec-card";
 
 function getRepoRoot(): string {
-  return process.env.SPECFLOW_REPO || process.cwd();
+  return process.env.SPS_REPO || process.cwd();
 }
 
 export default async function DashboardPage() {
   const repoRoot = getRepoRoot();
   const config = loadConfig(repoRoot);
-  const specs = loadSpecs(repoRoot, config.specs_dir);
+  const specs = loadSpecs(repoRoot);
   const categories = config.categories;
+  const principles = loadPrinciples(repoRoot);
 
   const allRules = specs.flatMap((s) =>
     s.rules.map((r) => ({
       ...r,
-      domain: s.domain,
-      module: s.module,
+      spec: s.spec,
       trace: s._trace,
     }))
   );
@@ -38,11 +38,11 @@ export default async function DashboardPage() {
     }
   }
 
-  // Also build domain grouping for uncategorized
-  const byDomain = new Map<string, typeof allRules>();
+  // Also build spec grouping for uncategorized
+  const bySpec = new Map<string, typeof allRules>();
   for (const rule of uncategorized) {
-    if (!byDomain.has(rule.domain)) byDomain.set(rule.domain, []);
-    byDomain.get(rule.domain)!.push(rule);
+    if (!bySpec.has(rule.spec)) bySpec.set(rule.spec, []);
+    bySpec.get(rule.spec)!.push(rule);
   }
 
   return (
@@ -52,6 +52,29 @@ export default async function DashboardPage() {
         {active.length} active | {proposed.length} proposed |{" "}
         {specs.length} files | {categories.length} categories
       </p>
+
+      {/* Principles */}
+      {principles.length > 0 && (
+        <div
+          style={{
+            border: "1px solid #333",
+            borderRadius: "12px",
+            padding: "20px",
+            marginBottom: "32px",
+            backgroundColor: "#111",
+          }}
+        >
+          <h3 style={{ margin: "0 0 12px 0", color: "#ccc", fontSize: "14px", textTransform: "uppercase", letterSpacing: "1px" }}>
+            Team Principles
+          </h3>
+          {principles.map((p) => (
+            <div key={p.id} style={{ marginBottom: "8px" }}>
+              <span style={{ color: "#fff", fontWeight: 600 }}>{p.title}</span>
+              <span style={{ color: "#888" }}> — {p.description}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Category summary cards */}
       <div
@@ -133,10 +156,9 @@ export default async function DashboardPage() {
             </h2>
             {rules.map((rule) => (
               <SpecCard
-                key={rule.id || rule.summary}
+                key={rule.id || rule.title}
                 rule={rule}
-                domain={rule.domain}
-                module={rule.module}
+                spec={rule.spec}
                 trace={rule.trace}
                 categories={categories}
               />
@@ -145,7 +167,7 @@ export default async function DashboardPage() {
         );
       })}
 
-      {/* Uncategorized specs (grouped by domain) */}
+      {/* Uncategorized specs (grouped by spec) */}
       {uncategorized.length > 0 && (
         <div style={{ marginBottom: "40px" }}>
           <h2
@@ -161,8 +183,8 @@ export default async function DashboardPage() {
               {uncategorized.length} rules
             </span>
           </h2>
-          {[...byDomain.entries()].map(([domain, rules]) => (
-            <div key={domain} style={{ marginBottom: "24px" }}>
+          {[...bySpec.entries()].map(([spec, rules]) => (
+            <div key={spec} style={{ marginBottom: "24px" }}>
               <h3
                 style={{
                   textTransform: "capitalize",
@@ -171,14 +193,13 @@ export default async function DashboardPage() {
                   marginBottom: "12px",
                 }}
               >
-                {domain}
+                {spec}
               </h3>
               {rules.map((rule) => (
                 <SpecCard
-                  key={rule.id || rule.summary}
+                  key={rule.id || rule.title}
                   rule={rule}
-                  domain={rule.domain}
-                  module={rule.module}
+                  spec={rule.spec}
                   trace={rule.trace}
                   categories={categories}
                 />

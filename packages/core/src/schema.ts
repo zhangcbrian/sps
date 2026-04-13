@@ -8,7 +8,7 @@ export function validateSpec(
   const errors: string[] = [];
   const parsed = spec as unknown as Record<string, unknown>;
 
-  for (const key of schema.required_top_level) {
+  for (const key of schema.required_fields) {
     if (!(key in parsed)) {
       errors.push(`Missing required top-level key "${key}".`);
     }
@@ -36,7 +36,7 @@ export function validateSpec(
     for (const field of schema.forbidden_rule_fields) {
       if (field in rule) {
         errors.push(
-          `${prefix}: forbidden field "${field}". Use "summary" instead.`
+          `${prefix}: forbidden field "${field}". Use "title" instead.`
         );
       }
     }
@@ -48,16 +48,6 @@ export function validateSpec(
     }
 
     if (
-      "added" in rule &&
-      rule.added !== null &&
-      typeof rule.added === "object"
-    ) {
-      errors.push(
-        `${prefix}: "added" must be a date string "YYYY-MM-DD", not an object.`
-      );
-    }
-
-    if (
       rule.status &&
       !["active", "proposed", "deprecated"].includes(rule.status as string)
     ) {
@@ -66,7 +56,6 @@ export function validateSpec(
       );
     }
 
-    // Validate category
     if ("category" in rule && validCategoryIds) {
       if (
         typeof rule.category !== "string" ||

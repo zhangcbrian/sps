@@ -1,13 +1,12 @@
-import { loadConfig, loadSpecs } from "@specflow/core";
+import { loadSpecs } from "@sps/core";
 
 function getRepoRoot(): string {
-  return process.env.SPECFLOW_REPO || process.cwd();
+  return process.env.SPS_REPO || process.cwd();
 }
 
 export default async function HistoryPage() {
   const repoRoot = getRepoRoot();
-  const config = loadConfig(repoRoot);
-  const specs = loadSpecs(repoRoot, config.specs_dir);
+  const specs = loadSpecs(repoRoot);
 
   // Collect all traced specs with timestamps
   const traced = specs
@@ -44,7 +43,7 @@ export default async function HistoryPage() {
             }}
           >
             <strong>
-              {spec.domain}/{spec.module}
+              {spec.spec}
             </strong>
             <span style={{ color: "#666", fontSize: "13px" }}>
               {new Date(spec._trace!.requested_at).toLocaleString()}

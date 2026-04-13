@@ -2,7 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import type {
   DraftSpec,
   SpecFile,
-  SpecflowConfig,
+  SpsConfig,
   DeduplicationResult,
 } from "./types.js";
 
@@ -17,7 +17,7 @@ interface LlmMatch {
 export async function deduplicate(
   draft: DraftSpec,
   existingSpecs: SpecFile[],
-  config: SpecflowConfig
+  config: SpsConfig
 ): Promise<DeduplicationResult> {
   if (existingSpecs.length === 0 || !config.dedup.enabled) {
     return { matches: [] };
@@ -26,15 +26,14 @@ export async function deduplicate(
   const existingSummaries = existingSpecs.flatMap((s) =>
     s.rules.map((r) => ({
       id: r.id,
-      summary: r.summary,
-      domain: s.domain,
-      module: s.module,
+      title: r.title,
+      spec: s.spec,
     }))
   );
 
   const draftSummaries = draft.rules.map((r, i) => ({
     index: i,
-    summary: r.summary,
+    title: r.title,
     description: r.description,
   }));
 
@@ -82,7 +81,7 @@ Respond with ONLY the JSON object.`,
 
   const ruleById = new Map<
     string,
-    { rule: (typeof existingSpecs)[0]["rules"][0]; spec: SpecFile }
+    { rule: SpecFile["rules"][0]; spec: SpecFile }
   >();
   for (const spec of existingSpecs) {
     for (const rule of spec.rules) {

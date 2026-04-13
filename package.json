@@ -1,5 +1,6 @@
 {
-  "name": "specflow",
+  "name": "sps",
+  "description": "SPS (Spec, Plan, Ship) — structured specs co-located with your code",
   "private": true,
   "packageManager": "pnpm@10.29.3",
   "scripts": {

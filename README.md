@@ -1,61 +1,144 @@
-# Specflow
+# SPS — Spec, Plan, Ship
 
-Turn natural language requirements into structured, traceable specs in git.
+Turn plain-English requirements into structured, traceable specs that live next to your code.
 
-Business users describe features in plain English. Specflow interprets them into structured YAML specs, deduplicates against existing specs, and commits them to your repo with full traceability.
+```
+"Users need discount codes at checkout"
+        |
+        v
+src/checkout/coupons/coupons.sps.yaml   (structured YAML, lineage IDs, given/when/then)
+```
+
+---
+
+## Why
+
+Requirements get lost. A PM describes a feature in Slack. An engineer interprets it differently. Six months later, nobody knows why a rule exists.
+
+SPS fixes this: one `.sps.yaml` file per feature area, co-located with the code, readable by both business users and engineers, tracked in git with full traceability.
+
+## Get Started
+
+```bash
+sps init                                          # creates .sps/config.yaml + example spec
+sps submit "users need discount codes at checkout" # LLM interprets → dedup → commit → PR
+```
+
+That's it. SPS creates a `.sps.yaml` file next to your code, assigns lineage IDs, and opens a PR.
+
+## What a Spec Looks Like
+
+```yaml
+# src/checkout/coupons/coupons.sps.yaml
+
+spec: checkout/coupons
+title: "Discount Codes"
+description: >
+  Allows customers to apply discount codes during checkout.
+category: business
+touches: [billing]                    # cross-cutting: also affects billing code
+
+rules:
+  - id: REQ-CHECKOUT-COUPON-01
+    title: "Customers can use a percentage discount code"
+    status: active
+    category: business
+    description: >
+      Valid percentage coupon reduces cart total by the discount percentage.
+    given: A customer has a cart totaling $100 and enters coupon SAVE20 (20% off).
+    when: The customer applies the coupon at checkout.
+    then: Cart total drops to $80. The $20 discount appears as a line item.
+    examples:
+      - input: { cart_cents: 10000, code: "SAVE20", value: 20 }
+        output: { total_cents: 8000, discount_cents: 2000 }
+    edge_cases:
+      - case: "100% discount"
+        decision: "Cart total becomes $0 — valid"
+    tests: []
+
+_trace:
+  requested_by: sarah@company.com
+  original_text: "We need to let users apply discount codes at checkout."
+  source: portal
+```
+
+One file. Business title, engineering detail, Given/When/Then, examples, edge cases, and a full audit trail.
+
+## Commands
+
+```bash
+sps init                  # Set up .sps/ config + example spec
+sps submit "description"  # NL → structured spec → branch → PR
+sps scan                  # Rebuild .sps/manifest.yaml (index of all specs)
+sps status                # Health report: rules by category, touches graph
+sps validate              # Schema check + touches reference warnings
+sps agent                 # Generate AI agent instructions from specs
+sps coverage              # Which spec rules have test coverage?
+sps doctor                # All of the above in one check
+```
+
+**Flags:** `sps status --json` | `sps scan --json` | `sps coverage --strict` | `sps agent -o path`
+
+## Connect Specs to Tests
+
+Every rule gets a lineage ID (`REQ-CHECKOUT-COUPON-01`). Put it in your test:
+
+```typescript
+describe("[REQ-CHECKOUT-COUPON-01] Apply percentage coupon", () => {
+  it("reduces cart total by discount percentage", () => { /* ... */ });
+});
+```
+
+Then `sps coverage` tells you which rules have tests and which don't. `sps coverage --strict` fails CI if any are missing.
+
+## Feed Specs to AI Agents
+
+```bash
+sps agent                                          # writes CLAUDE.md
+sps agent -o .github/copilot-instructions.md       # or any agent format
+```
+
+The generated file contains every active rule as a behavioral contract (Given/When/Then), lineage IDs for test linking, and team principles. Your AI agent codes against the spec, not a vague prompt.
+
+## Team Principles
+
+Optional `.sps/principles.yaml` — rules your whole team follows:
+
+```yaml
+principles:
+  - id: money-in-cents
+    title: "Money in cents"
+    description: "All monetary values are integers in cents. Never use floats."
+```
+
+Principles show up in `sps agent` output and on the portal dashboard.
+
+## What's in Your Repo
+
+```
+.sps/
+  config.yaml             # settings (categories, domains, LLM, git)
+  manifest.yaml           # auto-generated index of all specs
+  principles.yaml         # optional team principles
+src/
+  checkout/
+    checkout.sps.yaml     # specs live next to the code they describe
+    coupons/
+      coupons.sps.yaml
+      apply.ts
+  billing/
+    billing.sps.yaml
+```
+
+**Zero impact.** No build deps, no runtime deps, no CI changes unless you want them. Delete `.sps/` and your spec files — nothing else to clean up.
 
 ## Packages
 
-| Package | Description |
-|---------|-------------|
-| `@specflow/core` | Shared library — interpret, deduplicate, organize, validate, git |
-| `@specflow/cli` | Terminal interface — `specflow submit`, `specflow status`, `specflow validate` |
-| `@specflow/portal` | Web UI — submit, review, browse specs in a browser |
-
-## Quick Start
-
-```bash
-# Initialize in any git repo
-npx @specflow/cli init
-
-# Submit a requirement
-specflow submit "Users need to apply discount codes at checkout"
-
-# Check spec health
-specflow status
-
-# Validate all specs
-specflow validate
-
-# Start the web portal (optional)
-npx @specflow/portal --repo .
-```
-
-## How It Works
-
-```
-Business user describes a feature (portal or CLI)
-    ↓
-LLM interprets into structured spec YAML
-    ↓
-Deduplicates against existing specs
-    ↓
-Organizes into the right directory, assigns lineage IDs
-    ↓
-Commits to a branch, opens a PR
-    ↓
-Team reviews and merges
-```
-
-Every spec includes full traceability: who requested, what they said (verbatim), how the LLM interpreted it, who reviewed, when merged.
-
-## Zero-Impact Installation
-
-Specflow adds only two things to your repo:
-- `.specflow/config.yaml` — configuration
-- `specs/` — spec YAML files
-
-No build dependencies, no runtime impact, no CI changes (unless you want them). Works with any language, framework, or build system.
+| Package | What |
+|---------|------|
+| `@sps/core` | Engine: interpret, deduplicate, validate, scan, coverage, agent |
+| `@sps/cli` | `sps` binary — all commands above |
+| `@sps/portal` | Next.js web UI — submit, browse, review specs as readable cards |
 
 ## License
 

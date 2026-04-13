@@ -28,11 +28,11 @@ vi.mock("@anthropic-ai/sdk", () => ({
   },
 }));
 
-const emptyRule = {
+const makeRule = (overrides = {}) => ({
   id: null,
+  title: "Apply coupon",
   status: "proposed" as const,
   category: "business",
-  summary: "Apply coupon",
   description: "",
   given: "",
   when: "",
@@ -40,17 +40,18 @@ const emptyRule = {
   examples: [],
   edge_cases: [],
   tests: [],
-  added: "2026-04-12",
-  modified: null,
-};
+  ...overrides,
+});
 
 describe("deduplicate", () => {
   it("returns empty matches when no existing specs", async () => {
     const draft: DraftSpec = {
-      domain: "checkout",
-      module: "coupons",
+      spec: "checkout/coupons",
+      title: "Discount Codes",
       description: "Coupons",
-      rules: [emptyRule],
+      category: "business",
+      touches: [],
+      rules: [makeRule()],
     };
     const result = await deduplicate(draft, [], DEFAULT_CONFIG);
     expect(result.matches).toEqual([]);
@@ -59,27 +60,28 @@ describe("deduplicate", () => {
   it("finds matches against existing specs via LLM", async () => {
     const existing: SpecFile[] = [
       {
-        domain: "payments",
-        module: "checkout",
+        spec: "payments/checkout",
+        title: "Checkout Flow",
         description: "Checkout flow",
+        category: "business",
+        touches: [],
         rules: [
-          {
-            ...emptyRule,
+          makeRule({
             id: "REQ-PAY-CHECKOUT-03",
             status: "active",
-            summary: "Validate cart before payment",
-          },
+            title: "Validate cart before payment",
+          }),
         ],
-        filePath: "specs/payments/checkout.spec.yaml",
+        filePath: "src/payments/checkout.sps.yaml",
       },
     ];
     const draft: DraftSpec = {
-      domain: "checkout",
-      module: "coupons",
+      spec: "checkout/coupons",
+      title: "Discount Codes",
       description: "Coupons",
-      rules: [
-        { ...emptyRule, summary: "Apply coupon at checkout" },
-      ],
+      category: "business",
+      touches: [],
+      rules: [makeRule({ title: "Apply coupon at checkout" })],
     };
     const result = await deduplicate(draft, existing, DEFAULT_CONFIG);
     expect(result.matches).toHaveLength(1);

@@ -20,12 +20,12 @@ describe("validate command", () => {
     origCwd = process.cwd();
   });
 
-  it("passes for valid specs", async () => {
-    const dir = mkdtempSync(join(tmpdir(), "specflow-cli-test-"));
-    mkdirSync(join(dir, "specs/test"), { recursive: true });
+  it("passes for valid .sps.yaml specs", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "sps-cli-test-"));
+    mkdirSync(join(dir, "src/test"), { recursive: true });
     writeFileSync(
-      join(dir, "specs/test/mod.spec.yaml"),
-      `domain: test\nmodule: mod\ndescription: Test\nrules:\n  - id: REQ-TEST-01\n    status: active\n    summary: Rule\n    description: A rule\n    given: Precondition\n    when: Action\n    then: Outcome\n    examples: []\n    edge_cases: []\n    tests: []\n    added: "2026-04-12"\n    modified: null\n`
+      join(dir, "src/test/test.sps.yaml"),
+      `spec: test/mod\ntitle: Test\ndescription: Test\ncategory: business\ntouches: []\nrules:\n  - id: REQ-TEST-01\n    title: Rule\n    status: active\n    category: business\n    description: A rule\n    given: Precondition\n    when: Action\n    then: Outcome\n    examples: []\n    edge_cases: []\n    tests: []\n`
     );
 
     process.chdir(dir);
@@ -44,11 +44,11 @@ describe("validate command", () => {
   });
 
   it("fails for invalid specs", async () => {
-    const dir = mkdtempSync(join(tmpdir(), "specflow-cli-test-"));
-    mkdirSync(join(dir, "specs/test"), { recursive: true });
+    const dir = mkdtempSync(join(tmpdir(), "sps-cli-test-"));
+    mkdirSync(join(dir, "src/test"), { recursive: true });
     writeFileSync(
-      join(dir, "specs/test/bad.spec.yaml"),
-      `domain: test\nmodule: bad\ndescription: Bad\nrules:\n  - id: REQ-TEST-01\n    status: active\n    rule: "Should be summary"\n`
+      join(dir, "src/test/bad.sps.yaml"),
+      `spec: test/bad\ntitle: Bad\ndescription: Bad\ncategory: business\ntouches: []\nrules:\n  - id: REQ-TEST-01\n    status: active\n    summary: "Should be title"\n`
     );
 
     process.chdir(dir);

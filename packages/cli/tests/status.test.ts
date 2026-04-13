@@ -20,12 +20,12 @@ describe("status command", () => {
     origCwd = process.cwd();
   });
 
-  it("reports spec counts", async () => {
-    const dir = mkdtempSync(join(tmpdir(), "specflow-cli-test-"));
-    mkdirSync(join(dir, "specs/billing"), { recursive: true });
+  it("reports spec counts from co-located .sps.yaml files", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "sps-cli-test-"));
+    mkdirSync(join(dir, "src/billing"), { recursive: true });
     writeFileSync(
-      join(dir, "specs/billing/invoices.spec.yaml"),
-      `domain: billing\nmodule: invoices\ndescription: Invoices\nrules:\n  - id: REQ-BIL-INV-01\n    status: active\n    summary: Create invoice\n    description: Creates invoice\n    given: A user\n    when: Request\n    then: Created\n    examples: []\n    edge_cases: []\n    tests: []\n    added: "2026-04-12"\n    modified: null\n`
+      join(dir, "src/billing/billing.sps.yaml"),
+      `spec: billing\ntitle: Billing\ndescription: Invoices\ncategory: business\ntouches: []\nrules:\n  - id: REQ-BIL-01\n    title: Create invoice\n    status: active\n    category: business\n    description: Creates invoice\n    given: A user\n    when: Request\n    then: Created\n    examples: []\n    edge_cases: []\n    tests: []\n`
     );
 
     process.chdir(dir);
@@ -35,7 +35,7 @@ describe("status command", () => {
     console.log = (...args: unknown[]) => logs.push(args.join(" "));
 
     const { statusCommand } = await import("../src/commands/status.js");
-    await statusCommand({});
+    await statusCommand(undefined, {});
 
     console.log = origLog;
     process.chdir(origCwd);

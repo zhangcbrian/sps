@@ -1,23 +1,22 @@
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 import { parse } from "yaml";
-import type { SpecflowConfig } from "./types.js";
+import type { SpsConfig } from "./types.js";
 
-export const DEFAULT_CONFIG: SpecflowConfig = {
+export const DEFAULT_CONFIG: SpsConfig = {
   version: 1,
-  specs_dir: "specs",
   schema: {
-    required_top_level: ["domain", "module", "description", "rules"],
+    required_fields: ["spec", "title", "description", "rules"],
     required_rule_fields: [
       "id",
       "status",
-      "summary",
+      "title",
       "description",
       "given",
       "when",
       "then",
     ],
-    forbidden_rule_fields: ["rule"],
+    forbidden_rule_fields: ["rule", "summary", "business_title"],
     id_format: "REQ-{DOMAIN}-{MODULE}-{NN}",
   },
   domains: {},
@@ -82,8 +81,8 @@ function deepMerge(
   return result;
 }
 
-export function loadConfig(repoRoot: string): SpecflowConfig {
-  const configPath = join(repoRoot, ".specflow", "config.yaml");
+export function loadConfig(repoRoot: string): SpsConfig {
+  const configPath = join(repoRoot, ".sps", "config.yaml");
   if (!existsSync(configPath)) {
     return { ...DEFAULT_CONFIG };
   }
@@ -94,5 +93,5 @@ export function loadConfig(repoRoot: string): SpecflowConfig {
   return deepMerge(
     DEFAULT_CONFIG as unknown as Record<string, unknown>,
     userConfig
-  ) as unknown as SpecflowConfig;
+  ) as unknown as SpsConfig;
 }

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Specflow — Requirements Portal",
+  title: "SPS — Requirements Portal",
   description:
     "Turn natural language requirements into structured, traceable specs",
 };
@@ -32,7 +32,7 @@ export default function RootLayout({
             alignItems: "center",
           }}
         >
-          <strong style={{ fontSize: "18px" }}>Specflow</strong>
+          <strong style={{ fontSize: "18px" }}>SPS</strong>
           <a href="/" style={{ color: "#ccc", textDecoration: "none" }}>
             Dashboard
           </a>
