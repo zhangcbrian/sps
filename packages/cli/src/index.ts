@@ -5,6 +5,8 @@ import { submitCommand } from "./commands/submit.js";
 import { statusCommand } from "./commands/status.js";
 import { validateCommand } from "./commands/validate.js";
 import { scanCommand } from "./commands/scan.js";
+import { agentCommand } from "./commands/agent.js";
+import { coverageCommand } from "./commands/coverage.js";
 
 const program = new Command();
 
@@ -48,5 +50,17 @@ program
   .command("scan")
   .description("Force rebuild the manifest")
   .action(scanCommand);
+
+program
+  .command("agent")
+  .description("Generate AI agent instructions from specs")
+  .option("-o, --output <path>", "Output file path (default: CLAUDE.md)")
+  .action(agentCommand);
+
+program
+  .command("coverage")
+  .description("Analyze test coverage of spec rules")
+  .option("--strict", "Exit with code 1 if any rules lack test coverage")
+  .action(coverageCommand);
 
 program.parse();
