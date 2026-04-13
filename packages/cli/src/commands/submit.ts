@@ -1,4 +1,4 @@
-import { submitRequirement } from "@specflow/core";
+import { submitRequirement } from "@sps/core";
 import chalk from "chalk";
 import { createInterface } from "readline";
 
@@ -20,16 +20,15 @@ export async function submitCommand(
   options: { guided?: boolean; author?: string }
 ) {
   const repoRoot = process.cwd();
-  const author = options.author || process.env.USER || "unknown@specflow.dev";
+  const author = options.author || process.env.USER || "unknown@sps.dev";
 
-  // Get description from argument or prompt
   let text = description;
   if (!text) {
     text = await prompt(
       chalk.bold("Describe the feature you need:\n> ")
     );
     if (!text) {
-      console.log(chalk.red("✗ No description provided."));
+      console.log(chalk.red("x No description provided."));
       process.exit(1);
     }
   }
@@ -44,7 +43,6 @@ export async function submitCommand(
       mode: options.guided ? "guided" : "quick",
     });
 
-    // Show deduplication results
     if (result.deduplication.matches.length > 0) {
       console.log(
         chalk.yellow(
@@ -53,21 +51,20 @@ export async function submitCommand(
       );
       for (const match of result.deduplication.matches) {
         console.log(
-          `  ${match.existingRule.id} (${match.existingSpec.domain}/${match.existingSpec.module}) — ${match.relationship}`
+          `  ${match.existingRule.id} (${match.existingSpec.spec}) — ${match.relationship}`
         );
         console.log(chalk.dim(`    ${match.explanation}`));
       }
     }
 
-    // Show result
-    console.log(chalk.green("\n✓ Spec created successfully"));
+    console.log(chalk.green("\n* Spec created successfully"));
     console.log(`  File:   ${result.filePath}`);
     console.log(`  Branch: ${result.branch}`);
     console.log(`  Rules:  ${result.ruleCount}`);
     console.log("");
   } catch (error) {
     console.error(
-      chalk.red("✗ Failed to create spec:"),
+      chalk.red("x Failed to create spec:"),
       error instanceof Error ? error.message : error
     );
     process.exit(1);

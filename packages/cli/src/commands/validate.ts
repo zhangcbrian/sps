@@ -1,10 +1,10 @@
-import { loadConfig, loadSpecs, validateSpec } from "@specflow/core";
+import { loadConfig, loadSpecs, validateSpec } from "@sps/core";
 import chalk from "chalk";
 
 export async function validateCommand() {
   const repoRoot = process.cwd();
   const config = loadConfig(repoRoot);
-  const specs = loadSpecs(repoRoot, config.specs_dir);
+  const specs = loadSpecs(repoRoot);
 
   let totalErrors = 0;
   const failures: Array<{ file: string; errors: string[] }> = [];
@@ -19,14 +19,14 @@ export async function validateCommand() {
 
   if (failures.length === 0) {
     console.log(
-      chalk.green(`✓ All ${specs.length} spec file(s) conform to schema.`)
+      chalk.green(`* All ${specs.length} spec file(s) conform to schema.`)
     );
     return;
   }
 
   console.error(
     chalk.red(
-      `\n✗ Schema validation failed (${failures.length} file(s), ${totalErrors} error(s)):\n`
+      `\nx Schema validation failed (${failures.length} file(s), ${totalErrors} error(s)):\n`
     )
   );
   for (const failure of failures) {
