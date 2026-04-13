@@ -39,6 +39,7 @@ program
   .description("Show spec health report")
   .argument("[dir]", "Optional directory to filter")
   .option("--gaps-only", "Only show gaps")
+  .option("--json", "Output as JSON")
   .action(statusCommand);
 
 program
