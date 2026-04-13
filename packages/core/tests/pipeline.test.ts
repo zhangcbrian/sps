@@ -3,14 +3,17 @@ import { submitRequirement } from "../src/pipeline.js";
 
 vi.mock("../src/interpret.js", () => ({
   interpret: vi.fn().mockResolvedValue({
-    domain: "checkout",
-    module: "coupons",
+    spec: "checkout/coupons",
+    title: "Discount Codes",
     description: "Coupon support",
+    category: "business",
+    touches: [],
     rules: [
       {
         id: null,
+        title: "Apply coupon",
         status: "proposed",
-        summary: "Apply coupon",
+        category: "business",
         description: "Applies coupon",
         given: "A cart",
         when: "Coupon applied",
@@ -18,8 +21,6 @@ vi.mock("../src/interpret.js", () => ({
         examples: [],
         edge_cases: [],
         tests: [],
-        added: "2026-04-12",
-        modified: null,
       },
     ],
   }),
@@ -57,7 +58,7 @@ describe("submitRequirement", () => {
     expect(deduplicate).toHaveBeenCalledOnce();
     expect(createSpecBranch).toHaveBeenCalledOnce();
 
-    expect(result.filePath).toBe("specs/checkout/coupons.spec.yaml");
+    expect(result.filePath).toBe("src/checkout/coupons/coupons.sps.yaml");
     expect(result.branch).toBe("spec/coupon-support");
     expect(result.ruleCount).toBe(1);
     expect(result.deduplication.matches).toEqual([]);
