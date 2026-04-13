@@ -4,7 +4,7 @@ import { join } from "path";
 import { stringify } from "yaml";
 import chalk from "chalk";
 
-export async function scanCommand() {
+export async function scanCommand(options: { json?: boolean } = {}) {
   const repoRoot = process.cwd();
   const config = loadConfig(repoRoot);
   const specs = loadSpecs(repoRoot);
@@ -16,6 +16,11 @@ export async function scanCommand() {
   const header = "# AUTO-GENERATED — do not edit. Run `sps scan` to refresh.\n\n";
   const content = header + stringify(manifest, { lineWidth: 100 });
   writeFileSync(join(spsDir, "manifest.yaml"), content, "utf-8");
+
+  if (options.json) {
+    console.log(JSON.stringify(manifest, null, 2));
+    return;
+  }
 
   console.log(chalk.green("*"), "Manifest rebuilt");
   console.log(`  Files: ${manifest.totals.files}`);

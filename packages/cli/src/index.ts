@@ -50,6 +50,7 @@ program
 program
   .command("scan")
   .description("Force rebuild the manifest")
+  .option("--json", "Output manifest as JSON")
   .action(scanCommand);
 
 program
