@@ -1,134 +1,144 @@
-# SPS (Spec, Plan, Ship)
+# SPS — Spec, Plan, Ship
 
-Turn natural language requirements into structured, traceable `.sps.yaml` specs co-located with your code.
+Turn plain-English requirements into structured, traceable specs that live next to your code.
 
-Business users describe features in plain English. SPS interprets them into structured YAML specs, deduplicates against existing specs, and commits them to your repo with full traceability.
+```
+"Users need discount codes at checkout"
+        |
+        v
+src/checkout/coupons/coupons.sps.yaml   (structured YAML, lineage IDs, given/when/then)
+```
 
-## Packages
+---
 
-| Package | Description |
-|---------|-------------|
-| `@sps/core` | Shared library -- interpret, deduplicate, organize, validate, git |
-| `@sps/cli` | Terminal interface -- `sps` commands |
-| `@sps/portal` | Web UI -- submit, review, browse specs in a browser |
+## Why
 
-## Quick Start
+Requirements get lost. A PM describes a feature in Slack. An engineer interprets it differently. Six months later, nobody knows why a rule exists.
+
+SPS fixes this: one `.sps.yaml` file per feature area, co-located with the code, readable by both business users and engineers, tracked in git with full traceability.
+
+## Get Started
 
 ```bash
-# Initialize in any git repo
-sps init
-
-# Submit a requirement
-sps submit "Users need to apply discount codes at checkout"
-
-# Scan for .sps.yaml files and build the manifest
-sps scan
-
-# Check spec health (with category breakdown and touches graph)
-sps status
-
-# Validate all specs
-sps validate
-
-# Generate AI agent instructions from specs
-sps agent
-
-# Check which spec rules have test coverage
-sps coverage
+sps init                                          # creates .sps/config.yaml + example spec
+sps submit "users need discount codes at checkout" # LLM interprets → dedup → commit → PR
 ```
 
-## How It Works
+That's it. SPS creates a `.sps.yaml` file next to your code, assigns lineage IDs, and opens a PR.
 
-```
-Business user describes a feature (portal or CLI)
-    |
-LLM interprets into structured .sps.yaml spec
-    |
-Deduplicates against existing specs
-    |
-Organizes into the right directory, assigns lineage IDs
-    |
-Commits to a branch, opens a PR
-    |
-Team reviews and merges
-```
-
-Every spec includes full traceability: who requested, what they said (verbatim), how the LLM interpreted it, who reviewed, when merged.
-
-## AI Agent Integration
-
-SPS generates structured instructions for AI coding agents:
-
-```bash
-# Generate CLAUDE.md from all specs + principles
-sps agent
-
-# Custom output path
-sps agent --output .github/copilot-instructions.md
-```
-
-The generated file includes all active spec rules with Given/When/Then contracts, lineage IDs for test linking, and team principles. This makes SPS specs the input format your AI agents consume.
-
-## Test Coverage
-
-SPS tracks which spec rules have test coverage by scanning test files for lineage IDs:
-
-```bash
-# Report coverage
-sps coverage
-
-# CI gate: fail if any rules lack tests
-sps coverage --strict
-```
-
-Link tests to specs by including the lineage ID in your test describe block:
-
-```typescript
-describe("[REQ-CHECKOUT-COUPON-01] Apply discount code", () => {
-  it("reduces cart total by the discount percentage", () => {
-    // ...
-  });
-});
-```
-
-## Principles
-
-Define team-wide principles in `.sps/principles.yaml`:
+## What a Spec Looks Like
 
 ```yaml
-principles:
-  - id: no-silent-failures
-    title: "No silent failures"
-    description: "Every error path must log, alert, or return an error."
-  - id: money-in-cents
-    title: "Money in cents"
-    description: "All monetary values are integers in cents."
+# src/checkout/coupons/coupons.sps.yaml
+
+spec: checkout/coupons
+title: "Discount Codes"
+description: >
+  Allows customers to apply discount codes during checkout.
+category: business
+touches: [billing]                    # cross-cutting: also affects billing code
+
+rules:
+  - id: REQ-CHECKOUT-COUPON-01
+    title: "Customers can use a percentage discount code"
+    status: active
+    category: business
+    description: >
+      Valid percentage coupon reduces cart total by the discount percentage.
+    given: A customer has a cart totaling $100 and enters coupon SAVE20 (20% off).
+    when: The customer applies the coupon at checkout.
+    then: Cart total drops to $80. The $20 discount appears as a line item.
+    examples:
+      - input: { cart_cents: 10000, code: "SAVE20", value: 20 }
+        output: { total_cents: 8000, discount_cents: 2000 }
+    edge_cases:
+      - case: "100% discount"
+        decision: "Cart total becomes $0 — valid"
+    tests: []
+
+_trace:
+  requested_by: sarah@company.com
+  original_text: "We need to let users apply discount codes at checkout."
+  source: portal
 ```
 
-Principles are included in `sps agent` output so AI agents follow your team's rules.
-
-## Zero-Impact Installation
-
-SPS adds only two things to your repo:
-- `.sps/` directory -- configuration (`config.yaml`), manifest, optional principles
-- `.sps.yaml` files -- spec files co-located next to the code they describe
-
-No build dependencies, no runtime impact, no CI changes (unless you want them). Works with any language, framework, or build system.
+One file. Business title, engineering detail, Given/When/Then, examples, edge cases, and a full audit trail.
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `sps init` | Initialize SPS in the current repo |
-| `sps submit "text"` | Interpret, deduplicate, place, commit, PR |
-| `sps scan` | Rebuild `.sps/manifest.yaml` |
-| `sps status [dir]` | Health report with category breakdown |
-| `sps status --json` | Machine-readable status output |
-| `sps validate` | Schema check all `.sps.yaml` files |
-| `sps agent` | Generate AI agent instructions (CLAUDE.md) |
-| `sps agent -o path` | Custom output path for agent instructions |
-| `sps coverage` | Test coverage report for spec rules |
-| `sps coverage --strict` | Fail if any rules lack test coverage |
+```bash
+sps init                  # Set up .sps/ config + example spec
+sps submit "description"  # NL → structured spec → branch → PR
+sps scan                  # Rebuild .sps/manifest.yaml (index of all specs)
+sps status                # Health report: rules by category, touches graph
+sps validate              # Schema check + touches reference warnings
+sps agent                 # Generate AI agent instructions from specs
+sps coverage              # Which spec rules have test coverage?
+sps doctor                # All of the above in one check
+```
+
+**Flags:** `sps status --json` | `sps scan --json` | `sps coverage --strict` | `sps agent -o path`
+
+## Connect Specs to Tests
+
+Every rule gets a lineage ID (`REQ-CHECKOUT-COUPON-01`). Put it in your test:
+
+```typescript
+describe("[REQ-CHECKOUT-COUPON-01] Apply percentage coupon", () => {
+  it("reduces cart total by discount percentage", () => { /* ... */ });
+});
+```
+
+Then `sps coverage` tells you which rules have tests and which don't. `sps coverage --strict` fails CI if any are missing.
+
+## Feed Specs to AI Agents
+
+```bash
+sps agent                                          # writes CLAUDE.md
+sps agent -o .github/copilot-instructions.md       # or any agent format
+```
+
+The generated file contains every active rule as a behavioral contract (Given/When/Then), lineage IDs for test linking, and team principles. Your AI agent codes against the spec, not a vague prompt.
+
+## Team Principles
+
+Optional `.sps/principles.yaml` — rules your whole team follows:
+
+```yaml
+principles:
+  - id: money-in-cents
+    title: "Money in cents"
+    description: "All monetary values are integers in cents. Never use floats."
+```
+
+Principles show up in `sps agent` output and on the portal dashboard.
+
+## What's in Your Repo
+
+```
+.sps/
+  config.yaml             # settings (categories, domains, LLM, git)
+  manifest.yaml           # auto-generated index of all specs
+  principles.yaml         # optional team principles
+src/
+  checkout/
+    checkout.sps.yaml     # specs live next to the code they describe
+    coupons/
+      coupons.sps.yaml
+      apply.ts
+  billing/
+    billing.sps.yaml
+```
+
+**Zero impact.** No build deps, no runtime deps, no CI changes unless you want them. Delete `.sps/` and your spec files — nothing else to clean up.
+
+## Packages
+
+| Package | What |
+|---------|------|
+| `@sps/core` | Engine: interpret, deduplicate, validate, scan, coverage, agent |
+| `@sps/cli` | `sps` binary — all commands above |
+| `@sps/portal` | Next.js web UI — submit, browse, review specs as readable cards |
 
 ## License
 
