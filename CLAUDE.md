@@ -63,6 +63,7 @@ The core library (`packages/core/src/`) contains these modules:
 | `sps agent -o path` | Custom output path for agent instructions |
 | `sps coverage` | Analyze test coverage of spec rules |
 | `sps coverage --strict` | CI gate: fail if any rules lack tests |
+| `sps doctor` | Combined health check: validate + coverage + scan |
 | `sps status --json` | Machine-readable status output |
 | `sps scan --json` | Output manifest as JSON |
 
