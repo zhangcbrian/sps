@@ -1,4 +1,4 @@
-import { loadConfig, loadSpecs, validateSpec } from "@sps/core";
+import { loadConfig, loadSpecs, validateSpec, validateTouches } from "@sps/core";
 import chalk from "chalk";
 
 export async function validateCommand() {
@@ -17,24 +17,38 @@ export async function validateCommand() {
     }
   }
 
+  // Validate touches references
+  const touchesWarnings = validateTouches(specs, repoRoot);
+
   if (failures.length === 0) {
     console.log(
       chalk.green(`* All ${specs.length} spec file(s) conform to schema.`)
     );
-    return;
+  } else {
+    console.error(
+      chalk.red(
+        `\nx Schema validation failed (${failures.length} file(s), ${totalErrors} error(s)):\n`
+      )
+    );
+    for (const failure of failures) {
+      console.error(`  ${failure.file}:`);
+      for (const error of failure.errors) {
+        console.error(chalk.dim(`    - ${error}`));
+      }
+      console.error("");
+    }
   }
 
-  console.error(
-    chalk.red(
-      `\nx Schema validation failed (${failures.length} file(s), ${totalErrors} error(s)):\n`
-    )
-  );
-  for (const failure of failures) {
-    console.error(`  ${failure.file}:`);
-    for (const error of failure.errors) {
-      console.error(chalk.dim(`    - ${error}`));
+  if (touchesWarnings.length > 0) {
+    console.log(chalk.yellow(`\n! Touches warnings (${touchesWarnings.length}):\n`));
+    for (const w of touchesWarnings) {
+      console.log(`  ${w.specFile}:`);
+      console.log(chalk.dim(`    - ${w.message}`));
     }
-    console.error("");
+    console.log("");
   }
-  process.exit(1);
+
+  if (failures.length > 0) {
+    process.exit(1);
+  }
 }

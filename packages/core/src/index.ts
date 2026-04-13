@@ -35,3 +35,5 @@ export type { Principle } from "./principles.js";
 export { generateAgentInstructions } from "./agent.js";
 export { analyzeCoverage } from "./coverage.js";
 export type { CoverageResult } from "./coverage.js";
+export { validateTouches } from "./validate-touches.js";
+export type { TouchesWarning } from "./validate-touches.js";
