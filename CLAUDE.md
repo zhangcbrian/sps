@@ -48,6 +48,7 @@ The core library (`packages/core/src/`) contains these modules:
 | `principles.ts` | Loads `.sps/principles.yaml` |
 | `agent.ts` | Generates AI agent instructions (CLAUDE.md) from specs |
 | `coverage.ts` | Scans test files for lineage IDs, reports coverage gaps |
+| `validate-touches.ts` | Checks `touches` references point to real directories |
 
 ## CLI Commands
 
@@ -57,9 +58,13 @@ The core library (`packages/core/src/`) contains these modules:
 | `sps submit "text"` | Full pipeline: interpret -> deduplicate -> place -> commit -> PR |
 | `sps scan` | Force rebuild `.sps/manifest.yaml` |
 | `sps status [dir]` | Health report (auto-rescans if stale) |
-| `sps validate` | Schema check all `.sps.yaml` files |
+| `sps validate` | Schema check all `.sps.yaml` files + touches warnings |
 | `sps agent` | Generate AI agent instructions from specs |
+| `sps agent -o path` | Custom output path for agent instructions |
 | `sps coverage` | Analyze test coverage of spec rules |
+| `sps coverage --strict` | CI gate: fail if any rules lack tests |
+| `sps status --json` | Machine-readable status output |
+| `sps scan --json` | Output manifest as JSON |
 
 ## Conventions
 
@@ -75,7 +80,7 @@ The core library (`packages/core/src/`) contains these modules:
 ## Testing
 
 - **Framework:** Vitest
-- **Core:** 55 tests across 14 test files
+- **Core:** 60 tests across 16 test files
 - **CLI:** 5 tests across 3 test files
 - **Portal:** No unit tests (verified via build)
 - **Mocks:** LLM calls mocked via `vi.mock("@anthropic-ai/sdk")`; git calls mocked via `vi.mock("simple-git")`
