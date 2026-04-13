@@ -166,7 +166,12 @@ The result: specification-driven development is rapidly becoming an industry nor
 | **Zero-impact install** | Yes | Yes | pip install | SaaS setup | SaaS setup | Enterprise |
 | **Open source** | Yes | Yes | Yes | No | No | No |
 | **Test traceability** | Yes (IDs in tests) | No | Yes (links) | Yes | Yes | Yes |
+| **Test coverage analysis** | Yes (`sps coverage`) | No | No | Yes | Unknown | Partial |
+| **Agent instructions gen** | Yes (`sps agent`) | No | No | No | No | No |
+| **Team principles** | Yes (`.sps/principles.yaml`) | Yes (constitution) | No | No | No | No |
+| **Health check** | Yes (`sps doctor`) | No | No | Dashboard | Dashboard | Dashboard |
 | **Manifest / index** | Yes (auto-gen) | No | Tree hierarchy | Dashboard | Dashboard | Database |
+| **CI-friendly JSON** | Yes (`--json` flags) | No | No | API | API | API |
 | **Price** | Free | Free | Free | $4M+ raised, enterprise | Enterprise | Enterprise |
 
 ---
@@ -174,13 +179,13 @@ The result: specification-driven development is rapidly becoming an industry nor
 ## What They Do Well That We Should Learn From
 
 ### GitHub Spec Kit
-- **"Constitution" concept** — org-wide principles that apply to every project. SPS could adopt a similar `.sps/principles.yaml` for team-wide rules.
-- **Agent-agnostic** — works with Copilot, Claude Code, Gemini CLI. SPS should ensure the same.
-- **Simplicity of onboarding** — one command, Markdown files, done. SPS's structured YAML is more powerful but higher friction.
+- **~~"Constitution" concept~~** — ~~org-wide principles that apply to every project.~~ **ADDRESSED:** SPS now has `.sps/principles.yaml` with structured principles included in agent output.
+- **Agent-agnostic** — works with Copilot, Claude Code, Gemini CLI. SPS's `sps agent` generates CLAUDE.md by default but supports custom output paths (`-o .github/copilot-instructions.md`).
+- **Simplicity of onboarding** — one command, Markdown files, done. SPS now generates `example.sps.yaml` on init to lower the friction.
 
 ### Trace.Space
 - **AI-suggested trace links** — automatically connecting requirements to implementations. SPS currently relies on manual lineage IDs in test `describe` blocks. Could we auto-detect these?
-- **Coverage gap detection** — flagging which specs have no tests. SPS has the lineage IDs but doesn't yet analyze test coverage gaps.
+- **~~Coverage gap detection~~** — ~~flagging which specs have no tests.~~ **ADDRESSED:** `sps coverage` scans test files for lineage IDs and reports gaps. `--strict` flag gates CI.
 - **Impact analysis** — when a spec changes, what tests/code are affected? SPS's `touches` field is a start but could go further.
 
 ### Doorstop
@@ -212,6 +217,18 @@ SPS specs are validated against a schema: required fields, forbidden fields, cat
 
 ### 6. The Manifest
 The auto-generated manifest provides a single-file index of all specs with cross-references, drift detection, totals by category/status, and a reverse index of the `touches` graph. No other git-native tool offers this.
+
+### 7. AI Agent Instructions Generation (`sps agent`)
+SPS generates structured agent instructions (CLAUDE.md or similar) directly from validated specs. This is the bridge between "specs as documentation" and "specs as executable contracts for AI agents." No other tool does this — Spec Kit's specs are freeform Markdown that agents consume passively. SPS generates *targeted instructions* with Given/When/Then contracts, lineage IDs for test linking, and team principles. This makes SPS the only tool where specs actively direct AI agent behavior.
+
+### 8. Test Coverage Analysis (`sps coverage`)
+SPS scans test files for lineage IDs (`REQ-xxx-xxx-xx`) and reports which spec rules have test coverage and which don't. `sps coverage --strict` can gate CI pipelines on spec-to-test coverage. No other git-native tool offers this — Trace.Space does similar analysis but in a proprietary cloud platform.
+
+### 9. Team Principles (`.sps/principles.yaml`)
+Like Spec Kit's "constitution" concept, but structured and machine-readable. Principles are included in agent-generated instructions and displayed in the portal. This ensures AI agents follow team rules, not just spec rules.
+
+### 10. Combined Health Check (`sps doctor`)
+One command that runs schema validation, touches reference checking, test coverage analysis, and manifest rebuild. Reports everything in a unified view. No other tool combines all of these checks in a single command.
 
 ---
 
