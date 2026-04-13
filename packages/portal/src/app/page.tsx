@@ -1,4 +1,4 @@
-import { loadConfig, loadSpecs } from "@sps/core";
+import { loadConfig, loadSpecs, loadPrinciples } from "@sps/core";
 import type { SpecRule, CategoryConfig } from "@sps/core";
 import { SpecCard } from "@/components/spec-card";
 
@@ -11,6 +11,7 @@ export default async function DashboardPage() {
   const config = loadConfig(repoRoot);
   const specs = loadSpecs(repoRoot);
   const categories = config.categories;
+  const principles = loadPrinciples(repoRoot);
 
   const allRules = specs.flatMap((s) =>
     s.rules.map((r) => ({
@@ -51,6 +52,29 @@ export default async function DashboardPage() {
         {active.length} active | {proposed.length} proposed |{" "}
         {specs.length} files | {categories.length} categories
       </p>
+
+      {/* Principles */}
+      {principles.length > 0 && (
+        <div
+          style={{
+            border: "1px solid #333",
+            borderRadius: "12px",
+            padding: "20px",
+            marginBottom: "32px",
+            backgroundColor: "#111",
+          }}
+        >
+          <h3 style={{ margin: "0 0 12px 0", color: "#ccc", fontSize: "14px", textTransform: "uppercase", letterSpacing: "1px" }}>
+            Team Principles
+          </h3>
+          {principles.map((p) => (
+            <div key={p.id} style={{ marginBottom: "8px" }}>
+              <span style={{ color: "#fff", fontWeight: 600 }}>{p.title}</span>
+              <span style={{ color: "#888" }}> — {p.description}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Category summary cards */}
       <div
