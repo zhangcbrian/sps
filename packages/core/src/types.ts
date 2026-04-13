@@ -7,19 +7,8 @@ export interface CategoryConfig {
   color: string;
 }
 
-export interface SpecflowConfig {
-  version: number;
-  specs_dir: string;
-  schema: SchemaConfig;
-  domains: Record<string, string>;
-  categories: CategoryConfig[];
-  llm: LlmConfig;
-  git: GitConfig;
-  dedup: DedupConfig;
-}
-
 export interface SchemaConfig {
-  required_top_level: string[];
+  required_fields: string[];
   required_rule_fields: string[];
   forbidden_rule_fields: string[];
   id_format: string;
@@ -42,14 +31,23 @@ export interface DedupConfig {
   similarity_threshold: number;
 }
 
+export interface SpsConfig {
+  version: number;
+  schema: SchemaConfig;
+  domains: Record<string, string>;
+  categories: CategoryConfig[];
+  llm: LlmConfig;
+  git: GitConfig;
+  dedup: DedupConfig;
+}
+
 // --- Spec ---
 
 export interface SpecRule {
   id: string | null;
+  title: string;
   status: "active" | "proposed" | "deprecated";
   category: string;
-  business_title: string;
-  summary: string;
   description: string;
   given: string;
   when: string;
@@ -58,19 +56,19 @@ export interface SpecRule {
     input: Record<string, unknown>;
     output: Record<string, unknown>;
   }>;
-  edge_cases: Array<{ case: string; decision: string; ref: string }>;
+  edge_cases: Array<{ case: string; decision: string; ref?: string }>;
   tests: string[];
-  added: string;
-  modified: string | null;
 }
 
 export interface SpecFile {
-  _trace?: TraceBlock;
-  domain: string;
-  module: string;
+  spec: string;
+  title: string;
   description: string;
+  category: string;
+  touches: string[];
   rules: SpecRule[];
   filePath: string;
+  _trace?: TraceBlock;
 }
 
 // --- Trace ---
@@ -104,9 +102,11 @@ export interface TraceHistoryEntry {
 // --- Draft ---
 
 export interface DraftSpec {
-  domain: string;
-  module: string;
+  spec: string;
+  title: string;
   description: string;
+  category: string;
+  touches: string[];
   rules: SpecRule[];
 }
 
@@ -127,10 +127,47 @@ export interface DeduplicationResult {
 
 export interface OrganizeResult {
   filePath: string;
-  domain: string;
-  module: string;
+  spec: string;
   assignedIds: Map<number, string>;
   isNewFile: boolean;
+}
+
+// --- Manifest ---
+
+export interface ManifestEntry {
+  path: string;
+  spec: string;
+  title: string;
+  categories: string[];
+  rule_count: number;
+  touches: string[];
+  status_summary: Record<string, number>;
+}
+
+export interface CrossReference {
+  touched_by: Array<{
+    spec: string;
+    path: string;
+    rules: string[];
+  }>;
+}
+
+export interface DriftEntry {
+  path: string;
+  issue: string;
+}
+
+export interface Manifest {
+  generated_at: string;
+  specs: ManifestEntry[];
+  totals: {
+    files: number;
+    rules: number;
+    by_category: Record<string, number>;
+    by_status: Record<string, number>;
+  };
+  cross_references: Record<string, CrossReference>;
+  drift: DriftEntry[];
 }
 
 // --- Submission ---
@@ -140,17 +177,6 @@ export interface SubmissionContext {
   submittedBy: string;
   source: "portal" | "cli" | "api";
   mode: "quick" | "guided";
-}
-
-// --- Guided mode ---
-
-export interface GuidedTurn {
-  question: string;
-  answer?: string;
-}
-
-export interface GuidedSession {
-  context: SubmissionContext;
-  turns: GuidedTurn[];
-  currentDraft: DraftSpec | null;
+  category?: string;
+  suggestedPath?: string;
 }
