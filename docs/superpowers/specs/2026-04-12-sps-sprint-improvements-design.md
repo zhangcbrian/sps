@@ -1,7 +1,7 @@
 # SPS 5-Hour Improvement Sprint Design
 
 **Date:** 2026-04-12
-**Status:** In Progress (autonomous sprint)
+**Status:** Complete
 **Goal:** Close the most impactful gaps identified in the competitive analysis to differentiate SPS from GitHub Spec Kit and establish the AI agent integration story.
 
 ---
@@ -15,7 +15,7 @@
 ### 2. Agent Instructions Generator — DONE
 - `generateAgentInstructions()` in `packages/core/src/agent.ts`
 - Generates structured CLAUDE.md from specs + principles
-- 4 tests passing
+- 4 tests passing + 1 integration test
 
 ### 3. Test Coverage Analysis — DONE
 - `analyzeCoverage()` in `packages/core/src/coverage.ts`
@@ -36,22 +36,39 @@
 
 ---
 
-## Remaining (Sprint Part 2)
+## Completed (Sprint Part 2)
 
-### 7. Update README with new commands
-Update README.md to document `sps agent`, `sps coverage`, principles, and the improved status.
+### 7. README Update — DONE
+- Full command reference table
+- Agent integration, coverage, and principles sections
 
-### 8. Example .sps.yaml in sps init
-When running `sps init`, generate an example `.sps.yaml` file that shows the format.
+### 8. Example .sps.yaml in `sps init` — DONE
+- Generates `.sps/example.sps.yaml` with annotated format
+- Init test updated to verify example file
 
-### 9. Validate touches references
-Extend `sps validate` to check that `touches` references point to directories that actually exist in the repo.
+### 9. Validate Touches References — DONE
+- `validateTouches()` in `packages/core/src/validate-touches.ts`
+- Checks `src/{touch}`, `{touch}`, `packages/{touch}` paths
+- Integrated into `sps validate` as warnings (not failures)
+- 4 tests passing
 
-### 10. Export manifest as JSON
-Add `sps scan --json` flag to output manifest as JSON for CI integration.
+### 10. `sps scan --json` — DONE
+- Outputs manifest as JSON for CI integration
 
-### 11. Update portal to show principles
-Add principles display to the portal dashboard.
+### 11. Portal Principles Display — DONE
+- Dashboard shows team principles from `.sps/principles.yaml`
+- Portal build verified
 
-### 12. Integration test: end-to-end sps agent workflow
-Write a test that creates temp spec files, runs generateAgentInstructions, and verifies the output contains all expected sections.
+### 12. Agent Integration Test — DONE
+- End-to-end test creating specs on disk, loading, generating instructions
+- Verifies principles, active rules, edge cases, deprecated exclusion
+
+---
+
+## Final Stats
+
+- **65 tests** across 19 test files (16 core + 3 CLI)
+- **28 commits** on `feat/sps-rename-restructure`
+- **Portal builds** clean
+- **9 CLI commands:** init, submit, scan, status, validate, agent, coverage + scan --json, status --json
+- **New core modules:** principles.ts, agent.ts, coverage.ts, validate-touches.ts
