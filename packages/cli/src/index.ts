@@ -7,6 +7,7 @@ import { validateCommand } from "./commands/validate.js";
 import { scanCommand } from "./commands/scan.js";
 import { agentCommand } from "./commands/agent.js";
 import { coverageCommand } from "./commands/coverage.js";
+import { doctorCommand } from "./commands/doctor.js";
 
 const program = new Command();
 
@@ -64,5 +65,10 @@ program
   .description("Analyze test coverage of spec rules")
   .option("--strict", "Exit with code 1 if any rules lack test coverage")
   .action(coverageCommand);
+
+program
+  .command("doctor")
+  .description("Run a full health check: validate, coverage, scan")
+  .action(doctorCommand);
 
 program.parse();
