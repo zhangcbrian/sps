@@ -45,7 +45,9 @@ program
 
 program
   .command("validate")
-  .description("Validate all specs against schema")
+  .description("Validate all specs (schema, ID uniqueness, cross-refs, optional mutation check)")
+  .option("--against <ref>", "Compare against a git ref to detect active-rule mutations (e.g. origin/main)")
+  .option("--json", "Output as JSON")
   .action(validateCommand);
 
 program
