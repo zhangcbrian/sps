@@ -1,4 +1,4 @@
-import { loadSpecs, analyzeCoverage } from "@sps/core";
+import { loadSpecs, analyzeCoverage } from "@specflow/core";
 import chalk from "chalk";
 
 export async function coverageCommand(options: { strict?: boolean }) {

@@ -1,4 +1,4 @@
-import { loadSpecs } from "@sps/core";
+import { loadSpecs } from "@specflow/core";
 
 function getRepoRoot(): string {
   return process.env.SPS_REPO || process.cwd();

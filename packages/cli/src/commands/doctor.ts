@@ -6,7 +6,7 @@ import {
   buildManifest,
   loadPrinciples,
   validateTouches,
-} from "@sps/core";
+} from "@specflow/core";
 import { writeFileSync, mkdirSync } from "fs";
 import { join } from "path";
 import { stringify } from "yaml";

@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, writeFileSync } from "fs";
 import { join } from "path";
 import { stringify } from "yaml";
-import { DEFAULT_CONFIG } from "@sps/core";
+import { DEFAULT_CONFIG } from "@specflow/core";
 import chalk from "chalk";
 
 export async function initCommand() {

@@ -1,4 +1,4 @@
-import { loadConfig, loadSpecs, validateSpec, validateTouches } from "@sps/core";
+import { loadConfig, loadSpecs, validateSpec, validateTouches } from "@specflow/core";
 import chalk from "chalk";
 
 export async function validateCommand() {

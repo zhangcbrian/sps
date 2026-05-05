@@ -1,4 +1,4 @@
-# SPS — Spec, Plan, Ship
+# specflow
 
 Turn plain-English requirements into structured, traceable specs that live next to your code.
 
@@ -15,7 +15,7 @@ src/checkout/coupons/coupons.sps.yaml   (structured YAML, lineage IDs, given/whe
 
 Requirements get lost. A PM describes a feature in Slack. An engineer interprets it differently. Six months later, nobody knows why a rule exists.
 
-SPS fixes this: one `.sps.yaml` file per feature area, co-located with the code, readable by both business users and engineers, tracked in git with full traceability.
+specflow fixes this: one `.sps.yaml` file per feature area, co-located with the code, readable by both business users and engineers, tracked in git with full traceability.
 
 ## Get Started
 
@@ -24,7 +24,7 @@ sps init                                          # creates .sps/config.yaml + e
 sps submit "users need discount codes at checkout" # LLM interprets → dedup → commit → PR
 ```
 
-That's it. SPS creates a `.sps.yaml` file next to your code, assigns lineage IDs, and opens a PR.
+That's it. specflow creates a `.sps.yaml` file next to your code, assigns lineage IDs, and opens a PR.
 
 ## What a Spec Looks Like
 
@@ -71,13 +71,17 @@ sps init                  # Set up .sps/ config + example spec
 sps submit "description"  # NL → structured spec → branch → PR
 sps scan                  # Rebuild .sps/manifest.yaml (index of all specs)
 sps status                # Health report: rules by category, touches graph
-sps validate              # Schema check + touches reference warnings
+sps validate              # Schema check + cross-ref check + touches check
+sps show <ID>             # Print one rule compactly (great for agent context)
+sps diff [ref]            # Rules added/modified/superseded between refs
 sps agent                 # Generate AI agent instructions from specs
 sps coverage              # Which spec rules have test coverage?
+sps mcp                   # Run MCP server for editor / agent integration
+sps lint                  # Style/quality check (oversized rules, orphans, etc.)
 sps doctor                # All of the above in one check
 ```
 
-**Flags:** `sps status --json` | `sps scan --json` | `sps coverage --strict` | `sps agent -o path`
+**Flags:** every command supports `--json`. `sps coverage --strict` and `sps validate --against=<ref>` are CI gates.
 
 ## Connect Specs to Tests
 
@@ -96,6 +100,12 @@ Then `sps coverage` tells you which rules have tests and which don't. `sps cover
 ```bash
 sps agent                                          # writes CLAUDE.md
 sps agent -o .github/copilot-instructions.md       # or any agent format
+```
+
+Or run specflow as an MCP server and let the agent query specs on demand:
+
+```bash
+sps mcp
 ```
 
 The generated file contains every active rule as a behavioral contract (Given/When/Then), lineage IDs for test linking, and team principles. Your AI agent codes against the spec, not a vague prompt.
@@ -136,9 +146,9 @@ src/
 
 | Package | What |
 |---------|------|
-| `@sps/core` | Engine: interpret, deduplicate, validate, scan, coverage, agent |
-| `@sps/cli` | `sps` binary — all commands above |
-| `@sps/portal` | Next.js web UI — submit, browse, review specs as readable cards |
+| `@specflow/core` | Engine: interpret, deduplicate, validate, scan, coverage, agent |
+| `@specflow/cli` | `sps` (alias `specflow`) binary — all commands above |
+| `@specflow/portal` | Next.js web UI — submit, browse, review specs as readable cards |
 
 ## License
 

@@ -1,4 +1,4 @@
-import type { SpecRule, TraceBlock, CategoryConfig } from "@sps/core";
+import type { SpecRule, TraceBlock, CategoryConfig } from "@specflow/core";
 
 interface SpecCardProps {
   rule: SpecRule;

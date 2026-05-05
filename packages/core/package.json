@@ -1,12 +1,22 @@
 {
-  "name": "@sps/core",
-  "version": "0.1.0",
+  "name": "@specflow/core",
+  "version": "0.2.0",
+  "description": "specflow core engine — interpret, deduplicate, validate, scan, coverage",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zhangcbrian/sls.git",
+    "directory": "packages/core"
+  },
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
@@ -14,7 +24,6 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.50.0",
-    "@octokit/rest": "^21.0.0",
     "simple-git": "^3.27.0",
     "yaml": "^2.8.0"
   },

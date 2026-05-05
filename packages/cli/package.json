@@ -1,13 +1,24 @@
 {
-  "name": "@sps/cli",
-  "version": "0.1.0",
+  "name": "@specflow/cli",
+  "version": "0.2.0",
+  "description": "specflow CLI — sps binary for managing structured specs",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zhangcbrian/sls.git",
+    "directory": "packages/cli"
+  },
   "type": "module",
   "bin": {
+    "specflow": "dist/index.js",
     "sps": "dist/index.js"
   },
   "files": [
     "dist"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
@@ -15,10 +26,9 @@
     "dev": "tsx src/index.ts"
   },
   "dependencies": {
-    "@sps/core": "workspace:*",
+    "@specflow/core": "workspace:*",
     "chalk": "^5.4.0",
     "commander": "^13.0.0",
-    "inquirer": "^12.0.0",
     "yaml": "^2.8.3"
   },
   "devDependencies": {

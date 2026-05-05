@@ -14,9 +14,9 @@ const program = new Command();
 program
   .name("sps")
   .description(
-    "Spec, Plan, Ship — turn natural language requirements into structured, traceable specs in git"
+    "specflow — turn natural language requirements into structured, traceable specs in git"
   )
-  .version("0.1.0");
+  .version("0.2.0");
 
 program
   .command("init")

@@ -1,4 +1,4 @@
-import { submitRequirement } from "@sps/core";
+import { submitRequirement } from "@specflow/core";
 import chalk from "chalk";
 import { createInterface } from "readline";
 

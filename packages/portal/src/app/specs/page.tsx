@@ -1,4 +1,4 @@
-import { loadSpecs } from "@sps/core";
+import { loadSpecs } from "@specflow/core";
 import { SpecCard } from "@/components/spec-card";
 
 function getRepoRoot(): string {
