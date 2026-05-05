@@ -5,12 +5,12 @@ import type { SpecFile, SpecRule } from "./types.js";
 export interface MutationError {
   specFile: string;
   ruleId: string;
-  field: "title" | "given" | "when" | "then";
+  field: "title" | "given" | "when" | "then" | "behavior";
   before: string;
   after: string;
 }
 
-const TRACKED_FIELDS = ["title", "given", "when", "then"] as const;
+const TRACKED_TEXT_FIELDS = ["title", "given", "when", "then"] as const;
 
 /**
  * Detects edits to active rules' load-bearing fields (title, given, when, then)
@@ -58,7 +58,7 @@ export async function validateMutations(
       if (!beforeRule) continue;
       if (beforeRule.status !== "active") continue;
 
-      for (const field of TRACKED_FIELDS) {
+      for (const field of TRACKED_TEXT_FIELDS) {
         const beforeVal = String(beforeRule[field] ?? "");
         const afterVal = String(currentRule[field] ?? "");
         if (normalize(beforeVal) !== normalize(afterVal)) {
@@ -71,6 +71,18 @@ export async function validateMutations(
           });
         }
       }
+
+      const beforeBehavior = canonical(beforeRule.behavior);
+      const afterBehavior = canonical(currentRule.behavior);
+      if (beforeBehavior !== afterBehavior) {
+        errors.push({
+          specFile: current.filePath,
+          ruleId: currentRule.id,
+          field: "behavior",
+          before: beforeBehavior || "(none)",
+          after: afterBehavior || "(none)",
+        });
+      }
     }
   }
 
@@ -79,4 +91,9 @@ export async function validateMutations(
 
 function normalize(s: string): string {
   return s.replace(/\s+/g, " ").trim();
+}
+
+function canonical(value: unknown): string {
+  if (value === undefined || value === null) return "";
+  return JSON.stringify(value, Object.keys(value as object).sort());
 }

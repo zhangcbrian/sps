@@ -29,7 +29,14 @@ export interface SpecDiff {
   files_removed: string[];
 }
 
-const TRACKED_FIELDS = ["title", "given", "when", "then", "description"] as const;
+const TRACKED_FIELDS = [
+  "title",
+  "given",
+  "when",
+  "then",
+  "description",
+  "behavior",
+] as const;
 
 /**
  * Compute the spec-level diff between the working tree and a git ref.
@@ -94,8 +101,10 @@ export async function diffSpecs(
 
     const changed: string[] = [];
     for (const field of TRACKED_FIELDS) {
-      const beforeVal = normalize(String((before.rule as unknown as Record<string, unknown>)[field] ?? ""));
-      const afterVal = normalize(String((current.rule as unknown as Record<string, unknown>)[field] ?? ""));
+      const beforeRaw = (before.rule as unknown as Record<string, unknown>)[field];
+      const afterRaw = (current.rule as unknown as Record<string, unknown>)[field];
+      const beforeVal = field === "behavior" ? canonical(beforeRaw) : normalize(String(beforeRaw ?? ""));
+      const afterVal = field === "behavior" ? canonical(afterRaw) : normalize(String(afterRaw ?? ""));
       if (beforeVal !== afterVal) changed.push(field);
     }
     if (changed.length > 0) {
@@ -172,4 +181,9 @@ function buildIdMap(
 
 function normalize(s: string): string {
   return s.replace(/\s+/g, " ").trim();
+}
+
+function canonical(value: unknown): string {
+  if (value === undefined || value === null) return "";
+  return JSON.stringify(value, Object.keys(value as object).sort());
 }

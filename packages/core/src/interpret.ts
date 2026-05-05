@@ -7,11 +7,11 @@ function buildSystemPrompt(
 ): string {
   const specSummaries = existingSpecs
     .flatMap((s) =>
-      s.rules.map(
-        (r) => `${r.id}: ${r.title} (${s.spec})`
-      )
+      s.rules.map((r) => `${r.id}: ${r.title} (${s.spec})`)
     )
     .join("\n");
+
+  const validCategories = config.categories.map((c) => c.id).join("|");
 
   return `You are a requirements analyst. Your job is to convert natural language feature descriptions into structured spec JSON.
 
@@ -20,33 +20,44 @@ Output a JSON object with this exact structure:
   "spec": "domain/module",
   "title": "Human-readable name for this spec",
   "description": "Plain English description for business stakeholders",
-  "category": "business|engineering|security",
+  "category": "${validCategories}",
   "touches": ["other-domain-this-affects"],
   "rules": [
     {
       "id": null,
       "title": "One-line readable title for this rule",
       "status": "proposed",
-      "category": "business|engineering|security",
+      "category": "${validCategories}",
       "description": "Detailed explanation a product manager can read",
       "given": "Preconditions with concrete values ($50 stake, 24 hours before, etc.)",
       "when": "The trigger action",
       "then": "The expected outcome with concrete values",
-      "examples": [{"input": {}, "output": {}}],
-      "edge_cases": [{"case": "description", "decision": "what happens"}],
+      "behavior": {
+        "surface": "addressable.function.or.route.path",
+        "inputs": { "fieldName": "type description" },
+        "outputs": { "fieldName": "type description" },
+        "invariants": ["load-bearing invariant 1", "invariant 2"],
+        "errors": [{ "code": "ERROR_CODE", "when": "human-readable trigger" }]
+      },
+      "examples": [{ "input": {}, "output": {} }],
+      "edge_cases": [{ "case": "description", "decision": "what happens" }],
       "tests": []
     }
   ]
 }
 
 Rules for writing specs:
-- Write title, description, given, when, then in plain English — no code, no function names
-- Use real dollar amounts, time ranges, and concrete user actions
-- Each rule should be independently testable
-- Break complex features into multiple rules (one behavior per rule)
-- Monetary values in examples use cents (integer)
-- The "spec" field uses "domain/module" format, all lowercase
-- The "touches" field lists other domains this spec affects beyond its own
+- Write title, description, given, when, then in plain English — no code, no function names there.
+- The "behavior" block is the structured machine-readable contract. Use it for behavioral surfaces (API endpoints, UI components, background jobs). Skip the "behavior" block for purely structural rules (e.g. schema shape, naming conventions).
+- "behavior.surface" is a stable identifier the implementation will live behind: a function path, route, or component identifier. Required when "behavior" is present.
+- "behavior.invariants" hold ≤3 entries — keep them load-bearing facts ("filtered by ctx.orgId", "ordered by (first_name, last_name, id) ASC", "ban-listed entries are excluded"). Skip vague invariants.
+- "behavior.errors" lists expected error cases the caller must handle.
+- Each rule should be independently testable.
+- Break complex features into multiple rules (one behavior per rule).
+- Monetary values in examples use cents (integer).
+- The "spec" field uses "domain/module" format, all lowercase.
+- The "touches" field lists other domains this spec affects beyond its own.
+- Status defaults to "proposed" for new rules.
 
 ${specSummaries ? `Existing specs in this repo (avoid duplicating these):\n${specSummaries}` : "No existing specs in this repo yet."}
 

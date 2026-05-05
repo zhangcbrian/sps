@@ -64,6 +64,46 @@ export function showCommand(id: string, opts: ShowOptions = {}) {
   printField("when", r.when);
   printField("then", r.then);
 
+  if (r.behavior) {
+    console.log(chalk.bold("  behavior"));
+    console.log(`    surface: ${r.behavior.surface}`);
+    if (r.behavior.inputs && Object.keys(r.behavior.inputs).length > 0) {
+      console.log(`    inputs:`);
+      for (const [k, v] of Object.entries(r.behavior.inputs)) {
+        console.log(`      ${k}: ${v}`);
+      }
+    }
+    if (r.behavior.outputs && Object.keys(r.behavior.outputs).length > 0) {
+      console.log(`    outputs:`);
+      for (const [k, v] of Object.entries(r.behavior.outputs)) {
+        console.log(`      ${k}: ${v}`);
+      }
+    }
+    if (r.behavior.invariants && r.behavior.invariants.length > 0) {
+      console.log(`    invariants:`);
+      for (const inv of r.behavior.invariants) {
+        console.log(`      - ${inv}`);
+      }
+    }
+    if (r.behavior.errors && r.behavior.errors.length > 0) {
+      console.log(`    errors:`);
+      for (const e of r.behavior.errors) {
+        console.log(`      ${e.code}: ${e.when}`);
+      }
+    }
+    console.log("");
+  }
+
+  if (r.superseded_by) {
+    console.log(chalk.bold("  superseded by"));
+    console.log(`    ${r.superseded_by}`);
+    console.log("");
+  }
+
+  if (r.notes) {
+    printField("notes", r.notes);
+  }
+
   if (r.edge_cases && r.edge_cases.length > 0) {
     console.log(chalk.bold("  edge cases"));
     for (const ec of r.edge_cases) {

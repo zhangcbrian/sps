@@ -17,6 +17,7 @@ export type {
   DedupConfig,
   SpecFile,
   SpecRule,
+  BehaviorBlock,
   TraceBlock,
   RelatedSpec,
   TraceHistoryEntry,

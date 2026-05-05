@@ -43,15 +43,42 @@ export interface SpsConfig {
 
 // --- Spec ---
 
+/**
+ * Optional structured contract for a rule (v0.2). Captures the load-bearing
+ * facts about a behavioral surface without relying on prose interpretation.
+ *
+ * Pure structural rules (schema shape, ID format conventions) usually do
+ * not need a behavior block — Given/When/Then is awkward for those.
+ * Behavioral rules (API procedures, UI flows, jobs) benefit most.
+ */
+export interface BehaviorBlock {
+  /** Function path, route, component, or other addressable surface. */
+  surface: string;
+  /** Parameter shape, written as field → type description. */
+  inputs?: Record<string, string>;
+  /** Return / output shape, written as field → type description. */
+  outputs?: Record<string, string>;
+  /** Load-bearing invariants the implementation must uphold. Keep to ≤3. */
+  invariants?: string[];
+  /** Expected error cases. */
+  errors?: Array<{ code: string; when: string }>;
+}
+
 export interface SpecRule {
   id: string | null;
   title: string;
-  status: "active" | "proposed" | "deprecated";
+  status: "active" | "proposed" | "deprecated" | "superseded" | "removed";
   category: string;
   description: string;
   given: string;
   when: string;
   then: string;
+  /** Optional structured contract — added in v0.2. */
+  behavior?: BehaviorBlock;
+  /** Free-form prose notes. Promoted from the description for v0.2 — keep `description` for the human-readable summary, use `notes` for caveats and history. */
+  notes?: string;
+  /** Successor rule when this rule is `status: superseded`. */
+  superseded_by?: string;
   examples: Array<{
     input: Record<string, unknown>;
     output: Record<string, unknown>;

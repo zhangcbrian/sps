@@ -49,11 +49,62 @@ export function validateSpec(
 
     if (
       rule.status &&
-      !["active", "proposed", "deprecated"].includes(rule.status as string)
+      !["active", "proposed", "deprecated", "superseded", "removed"].includes(
+        rule.status as string
+      )
     ) {
       errors.push(
-        `${prefix}: "status" must be "active", "proposed", or "deprecated".`
+        `${prefix}: "status" must be one of: active, proposed, deprecated, superseded, removed.`
       );
+    }
+
+    if (rule.status === "superseded" && !rule.superseded_by) {
+      errors.push(
+        `${prefix}: rules with status="superseded" must declare \`superseded_by: REQ-…\`.`
+      );
+    }
+
+    if (rule.behavior !== undefined) {
+      if (
+        typeof rule.behavior !== "object" ||
+        rule.behavior === null ||
+        Array.isArray(rule.behavior)
+      ) {
+        errors.push(`${prefix}.behavior: must be an object.`);
+      } else {
+        const b = rule.behavior as Record<string, unknown>;
+        if (typeof b.surface !== "string" || b.surface.length === 0) {
+          errors.push(
+            `${prefix}.behavior.surface: required string (function path, route, or component identifier).`
+          );
+        }
+        for (const arrayField of ["invariants"] as const) {
+          if (arrayField in b && !Array.isArray(b[arrayField])) {
+            errors.push(
+              `${prefix}.behavior.${arrayField}: must be an array of strings.`
+            );
+          }
+        }
+        if ("errors" in b) {
+          if (!Array.isArray(b.errors)) {
+            errors.push(`${prefix}.behavior.errors: must be an array.`);
+          } else {
+            for (let j = 0; j < b.errors.length; j++) {
+              const e = b.errors[j] as Record<string, unknown>;
+              if (
+                !e ||
+                typeof e !== "object" ||
+                typeof e.code !== "string" ||
+                typeof e.when !== "string"
+              ) {
+                errors.push(
+                  `${prefix}.behavior.errors[${j}]: must be { code: string, when: string }.`
+                );
+              }
+            }
+          }
+        }
+      }
     }
 
     if ("category" in rule && validCategoryIds) {
