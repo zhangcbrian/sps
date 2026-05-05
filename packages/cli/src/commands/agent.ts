@@ -3,7 +3,12 @@ import { writeFileSync } from "fs";
 import { join } from "path";
 import chalk from "chalk";
 
-export async function agentCommand(options: { output?: string }) {
+interface AgentOptions {
+  output?: string;
+  json?: boolean;
+}
+
+export async function agentCommand(options: AgentOptions = {}) {
   const repoRoot = process.cwd();
   const specs = loadSpecs(repoRoot);
   const principles = loadPrinciples(repoRoot);
@@ -16,6 +21,23 @@ export async function agentCommand(options: { output?: string }) {
   const activeRules = specs.flatMap((s) =>
     s.rules.filter((r) => r.status === "active" || r.status === "proposed")
   );
+
+  if (options.json) {
+    console.log(
+      JSON.stringify(
+        {
+          ok: true,
+          output: outputPath.replace(repoRoot + "/", ""),
+          specs: specs.length,
+          rules: activeRules.length,
+          principles: principles.length,
+        },
+        null,
+        2
+      )
+    );
+    return;
+  }
 
   console.log(chalk.green("*"), `Agent instructions written to ${outputPath.replace(repoRoot + "/", "")}`);
   console.log(`  Specs:      ${specs.length}`);

@@ -43,3 +43,10 @@ export { validateCrossRefs } from "./validate-cross-refs.js";
 export type { UnresolvedRefError } from "./validate-cross-refs.js";
 export { validateMutations } from "./validate-mutations.js";
 export type { MutationError } from "./validate-mutations.js";
+export { diffSpecs } from "./diff.js";
+export type {
+  SpecDiff,
+  DiffRuleEntry,
+  DiffModifiedEntry,
+  DiffTransitionEntry,
+} from "./diff.js";
