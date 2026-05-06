@@ -3,45 +3,43 @@ import { interpret } from "../src/interpret.js";
 import type { SpecFile } from "../src/types.js";
 import { DEFAULT_CONFIG } from "../src/config.js";
 
-vi.mock("@anthropic-ai/sdk", () => ({
-  default: class MockAnthropic {
-    messages = {
-      create: vi.fn().mockResolvedValue({
-        content: [
-          {
-            type: "text",
-            text: JSON.stringify({
-              spec: "checkout/coupons",
-              title: "Discount Codes",
-              description: "Coupon discount support for checkout",
-              category: "business",
-              touches: ["billing"],
-              rules: [
-                {
-                  id: null,
-                  title: "Percentage coupon reduces cart total",
-                  status: "proposed",
-                  category: "business",
-                  description: "Applies a percentage discount to the cart subtotal",
-                  given: "A customer has a $100 cart and enters SAVE20",
-                  when: "The coupon is applied at checkout",
-                  then: "The cart total becomes $80",
-                  examples: [
-                    {
-                      input: { cart_cents: 10000 },
-                      output: { total_cents: 8000 },
-                    },
-                  ],
-                  edge_cases: [],
-                  tests: [],
-                },
-              ],
-            }),
+vi.mock("ai", () => ({
+  generateObject: vi.fn().mockResolvedValue({
+    object: {
+      spec: "checkout/coupons",
+      title: "Discount Codes",
+      description: "Coupon discount support for checkout",
+      category: "business",
+      touches: ["billing"],
+      rules: [
+        {
+          id: null,
+          title: "Percentage coupon reduces cart total",
+          status: "proposed",
+          category: "business",
+          description: "Applies a percentage discount to the cart subtotal",
+          given: "A customer has a $100 cart and enters SAVE20",
+          when: "The coupon is applied at checkout",
+          then: "The cart total becomes $80",
+          behavior: {
+            surface: "checkout.applyCoupon",
+            inputs: { code: "string", cartCents: "number" },
+            outputs: { discountCents: "number", totalCents: "number" },
+            invariants: ["totalCents = max(0, cartCents - discountCents)"],
+            errors: [{ code: "INVALID_COUPON", when: "code not recognized" }],
           },
-        ],
-      }),
-    };
-  },
+          examples: [
+            {
+              input: { cart_cents: 10000 },
+              output: { total_cents: 8000 },
+            },
+          ],
+          edge_cases: [],
+          tests: [],
+        },
+      ],
+    },
+  }),
 }));
 
 describe("interpret", () => {
@@ -58,6 +56,7 @@ describe("interpret", () => {
     expect(result.rules).toHaveLength(1);
     expect(result.rules[0].title).toBe("Percentage coupon reduces cart total");
     expect(result.rules[0].given).toContain("$100");
+    expect(result.rules[0].behavior?.surface).toBe("checkout.applyCoupon");
   });
 
   it("passes existing specs as context without crashing", async () => {

@@ -15,8 +15,21 @@ export interface SchemaConfig {
 }
 
 export interface LlmConfig {
-  provider: "anthropic" | "openai";
+  /**
+   * Gateway-style model ID like "anthropic/claude-opus-4-7" or
+   * "openai/gpt-5". Routed through the Vercel AI Gateway by default;
+   * set `AI_GATEWAY_API_KEY` (or use OIDC) to authenticate.
+   *
+   * Legacy form (separate `provider` + bare model name) is composed
+   * automatically when `model` lacks a slash.
+   */
   model: string;
+  /**
+   * Legacy provider name. New configs should encode the provider in
+   * `model` directly (e.g. "anthropic/claude-opus-4-7"). Kept as a
+   * compat shim for v0.1 configs.
+   */
+  provider?: string;
 }
 
 export interface GitConfig {
