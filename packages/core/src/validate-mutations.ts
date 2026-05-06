@@ -143,28 +143,32 @@ async function buildRefRuleMap(
   ref: string
 ): Promise<Map<string, BeforeRule>> {
   const map = new Map<string, BeforeRule>();
-  let files: string[] = [];
-  try {
-    const out = await git.raw(["ls-tree", "-r", ref, "--name-only"]);
-    files = out
-      .split("\n")
-      .map((s) => s.trim())
-      .filter((s) => s.endsWith(".sps.yaml"));
-  } catch {
-    return map;
-  }
+
+  // ls-tree failures here mean the ref itself is unreadable (typo,
+  // unfetched in CI, etc.). Propagate the throw — the CLI already
+  // catches it and exits with a clear message. Swallowing it here
+  // would silently disable the whole mutation gate.
+  const out = await git.raw(["ls-tree", "-r", ref, "--name-only"]);
+  const files = out
+    .split("\n")
+    .map((s) => s.trim())
+    .filter((s) => s.endsWith(".sps.yaml"));
 
   for (const filePath of files) {
     let content: string;
     try {
       content = await git.show([`${ref}:${filePath}`]);
     } catch {
+      // Per-file load failures (deleted between ls-tree and show, etc.)
+      // are local to one spec — keep going.
       continue;
     }
     let parsed: { rules?: unknown };
     try {
       parsed = parse(content) ?? {};
     } catch {
+      // Malformed YAML at the ref — pre-existing problem outside this
+      // validator's remit.
       continue;
     }
     if (!parsed || !Array.isArray(parsed.rules)) continue;

@@ -176,6 +176,18 @@ describe("MCP server", () => {
     await client.close();
   });
 
+  it("find_rules_by_touches matches package-level touches like `billing` against packages/billing/<file>", async () => {
+    const client = await startMcpClient(dir);
+    const result = await client.callTool({
+      name: "find_rules_by_touches",
+      arguments: { path: "packages/billing/src/invoice.ts" },
+    });
+    const payload = JSON.parse(readToolJson(result).content[0].text);
+    expect(payload.count).toBeGreaterThan(0);
+    expect(payload.rules[0].matchedTouch).toBe("billing");
+    await client.close();
+  });
+
   it("get_principles returns an empty list when none configured", async () => {
     const client = await startMcpClient(dir);
     const result = await client.callTool({ name: "get_principles", arguments: {} });

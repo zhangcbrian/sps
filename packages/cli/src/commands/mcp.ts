@@ -292,16 +292,37 @@ function overlapStrict(a: string, b: string): boolean {
 
 function pathCandidates(path: string): string[] {
   const candidates = new Set<string>([path]);
-  const stripPrefixes = [
-    /^src\//,
-    /^apps\/[^/]+\/src\//,
-    /^apps\/[^/]+\//,
-    /^packages\/[^/]+\/src\//,
-    /^packages\/[^/]+\//,
-  ];
-  for (const prefix of stripPrefixes) {
-    const stripped = path.replace(prefix, "");
-    if (stripped !== path) candidates.add(stripped);
+
+  // Drop a leading `src/` so a touch of "billing" matches a query of
+  // "src/billing/invoice.ts" via the billing/ prefix.
+  if (path.startsWith("src/")) {
+    candidates.add(path.slice(4));
   }
+
+  // Workspace-aware stripping: a query like "packages/billing/src/x.ts"
+  // (or "apps/web/src/billing/invoice.ts") is a path inside a workspace
+  // package. Generate candidates that:
+  //   - drop the workspace prefix only ("packages/" or "apps/"), keeping
+  //     the package name attached: "billing/src/x.ts"
+  //   - additionally drop a nested "src/", giving "billing/x.ts"
+  //   - drop everything before the inner path: "src/x.ts" / "x.ts"
+  //   - expose the bare workspace package name: "billing" (which lets a
+  //     touch entry of just "billing" match any file under it)
+  const workspaceMatch = path.match(/^(?:apps|packages)\/([^/]+)(?:\/(.+))?$/);
+  if (workspaceMatch) {
+    const pkgName = workspaceMatch[1];
+    const subPath = workspaceMatch[2];
+    candidates.add(pkgName);
+    if (subPath) {
+      candidates.add(`${pkgName}/${subPath}`);
+      candidates.add(subPath);
+      const subStripped = subPath.replace(/^src\//, "");
+      if (subStripped !== subPath) {
+        candidates.add(`${pkgName}/${subStripped}`);
+        candidates.add(subStripped);
+      }
+    }
+  }
+
   return [...candidates];
 }

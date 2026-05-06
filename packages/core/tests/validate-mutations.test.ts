@@ -266,6 +266,17 @@ rules:
     ).toBe(true);
   });
 
+  it("propagates an error when the comparison ref cannot be read", async () => {
+    writeFileSync(join(dir, SPEC_PATH), baseSpec("Discount applied."));
+    await git.add(SPEC_PATH);
+    await git.commit("initial");
+
+    const specs = loadSpecs(dir);
+    await expect(
+      validateMutations(specs, dir, "origin/does-not-exist")
+    ).rejects.toThrow();
+  });
+
   it("flags nested behavior changes (inputs/outputs/errors)", async () => {
     const withBehavior = (inputType: string) => `spec: checkout/checkout
 title: Checkout
