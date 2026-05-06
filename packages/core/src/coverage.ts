@@ -12,7 +12,17 @@ const SKIP_DIRS = new Set([
   "node_modules", ".git", ".next", "dist", "build", ".sps",
 ]);
 
-const LINEAGE_ID_PATTERN = /REQ-[A-Z]+-[A-Z]+-\d{2,}/g;
+/**
+ * Match a lineage ID only inside a `describe(...)`, `it(...)`, or `test(...)`
+ * call's string literal. Tightens the v0.1 regex (which matched any REQ-*
+ * anywhere in the file, including comments) so that a stray reference no
+ * longer fakes coverage.
+ *
+ * Captures group 2 = the lineage ID. Accepts `[REQ-…]` (the recommended
+ * shape) and bare `REQ-…` for tools that drop the brackets.
+ */
+const TEST_ID_PATTERN =
+  /\b(describe|it|test|context|specify)\s*\(\s*["'`]\s*\[?(REQ-[A-Z][A-Z0-9-]*-\d+)\]?/g;
 
 export interface CoverageResult {
   totalRules: number;
@@ -49,10 +59,13 @@ function extractIdsFromTestFiles(repoRoot: string): Map<string, string[]> {
   for (const filePath of testFiles) {
     try {
       const content = readFileSync(filePath, "utf-8");
-      const matches = content.match(LINEAGE_ID_PATTERN);
-      if (matches) {
+      const ids = new Set<string>();
+      for (const match of content.matchAll(TEST_ID_PATTERN)) {
+        if (match[2]) ids.add(match[2]);
+      }
+      if (ids.size > 0) {
         const relativePath = filePath.slice(repoRoot.length + 1);
-        for (const id of new Set(matches)) {
+        for (const id of ids) {
           const existing = idToFiles.get(id) || [];
           existing.push(relativePath);
           idToFiles.set(id, existing);

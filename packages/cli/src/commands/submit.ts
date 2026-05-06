@@ -1,6 +1,11 @@
-import { submitRequirement } from "@specflow/core";
+import { submitRequirement, submitDraftFile } from "@specflow/core";
 import chalk from "chalk";
 import { createInterface } from "readline";
+
+interface SubmitOptions {
+  author?: string;
+  offline?: string;
+}
 
 function prompt(question: string): Promise<string> {
   const rl = createInterface({
@@ -17,30 +22,44 @@ function prompt(question: string): Promise<string> {
 
 export async function submitCommand(
   description: string | undefined,
-  options: { guided?: boolean; author?: string }
+  options: SubmitOptions
 ) {
   const repoRoot = process.cwd();
   const author = options.author || process.env.USER || "unknown@sps.dev";
 
-  let text = description;
-  if (!text) {
-    text = await prompt(
-      chalk.bold("Describe the feature you need:\n> ")
-    );
-    if (!text) {
-      console.log(chalk.red("x No description provided."));
-      process.exit(1);
-    }
-  }
-
-  console.log(chalk.dim("\nInterpreting requirement..."));
-
   try {
+    if (options.offline) {
+      const result = await submitDraftFile(repoRoot, options.offline, {
+        text: description ?? `(offline draft: ${options.offline})`,
+        submittedBy: author,
+        source: "cli",
+        mode: "quick",
+      });
+
+      console.log(chalk.green("\n* Draft submitted successfully (offline)"));
+      console.log(`  File:   ${result.filePath}`);
+      console.log(`  Branch: ${result.branch}`);
+      console.log(`  Rules:  ${result.ruleCount}`);
+      console.log("");
+      return;
+    }
+
+    let text = description;
+    if (!text) {
+      text = await prompt(chalk.bold("Describe the feature you need:\n> "));
+      if (!text) {
+        console.log(chalk.red("x No description provided."));
+        process.exit(1);
+      }
+    }
+
+    console.log(chalk.dim("\nInterpreting requirement..."));
+
     const result = await submitRequirement(repoRoot, {
       text,
       submittedBy: author,
       source: "cli",
-      mode: options.guided ? "guided" : "quick",
+      mode: "quick",
     });
 
     if (result.deduplication.matches.length > 0) {

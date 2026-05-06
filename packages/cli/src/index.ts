@@ -32,9 +32,14 @@ program
 
 program
   .command("submit")
-  .description("Submit a new requirement")
+  .description(
+    "Submit a new requirement. Without --offline, runs the LLM pipeline (interpret → dedup → organize → commit). With --offline <path>, takes a hand-authored YAML draft and skips the LLM."
+  )
   .argument("[description]", "Feature description in natural language")
-  .option("--guided", "Use guided mode (interactive conversation)")
+  .option(
+    "--offline <path>",
+    "Submit a hand-authored draft YAML file (skips interpret + deduplicate)"
+  )
   .option(
     "--author <email>",
     "Author email",

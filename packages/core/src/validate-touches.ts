@@ -25,8 +25,7 @@ function resolveRoots(
   repoRoot: string,
   config?: SpsConfig
 ): string[] {
-  const validate = (config as unknown as { validate?: { touches_roots?: string[] } })?.validate;
-  const explicit = validate?.touches_roots;
+  const explicit = config?.validate?.touches_roots;
   const base = explicit && explicit.length > 0 ? explicit : DEFAULT_ROOTS;
   const roots = new Set<string>(base);
 

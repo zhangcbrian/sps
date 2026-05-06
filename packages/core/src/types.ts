@@ -44,6 +44,25 @@ export interface DedupConfig {
   similarity_threshold: number;
 }
 
+export interface PromptsConfig {
+  /**
+   * Optional repo-specific prose appended to the interpret system prompt.
+   * Use this to inject domain conventions ("money is always cents",
+   * "multi-tenant procedures default to org-scoped", etc.) without
+   * forking specflow.
+   */
+  interpret_postlude?: string;
+}
+
+export interface ValidateConfig {
+  /**
+   * Override the touches resolution roots. If unset, defaults to
+   * ["src", ".", "packages"] plus auto-discovered apps/* and packages/*
+   * subdirectories of the repo.
+   */
+  touches_roots?: string[];
+}
+
 export interface SpsConfig {
   version: number;
   schema: SchemaConfig;
@@ -52,6 +71,8 @@ export interface SpsConfig {
   llm: LlmConfig;
   git: GitConfig;
   dedup: DedupConfig;
+  prompts?: PromptsConfig;
+  validate?: ValidateConfig;
 }
 
 // --- Spec ---

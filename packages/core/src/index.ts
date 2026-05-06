@@ -7,7 +7,7 @@ export { organize } from "./organize.js";
 export { buildManifest } from "./scan.js";
 export { createSpecBranch, buildPrDescription } from "./git.js";
 export { buildTrace, appendHistory } from "./trace.js";
-export { submitRequirement } from "./pipeline.js";
+export { submitRequirement, submitDraftFile } from "./pipeline.js";
 export type {
   SpsConfig,
   CategoryConfig,

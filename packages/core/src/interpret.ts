@@ -12,8 +12,7 @@ function buildSystemPrompt(
 
   const validCategories = config.categories.map((c) => c.id).join("|");
 
-  const postlude = ((config as unknown as { prompts?: { interpret_postlude?: string } }).prompts ?? {})
-    .interpret_postlude;
+  const postlude = config.prompts?.interpret_postlude;
 
   return `You are a requirements analyst. Convert the user's natural language feature description into a structured spec.
 

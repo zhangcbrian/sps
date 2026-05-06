@@ -91,6 +91,62 @@ describe("analyzeCoverage", () => {
     expect(result.totalRules).toBe(0);
   });
 
+  it("ignores stray REQ-* mentions in comments or prose", () => {
+    const dir = mkdtempSync(join(tmpdir(), "sps-test-"));
+    mkdirSync(join(dir, "tests"), { recursive: true });
+    writeFileSync(
+      join(dir, "tests/coupons.test.ts"),
+      `// TODO: see REQ-CHECKOUT-COUPON-01 someday\n// REQ-CHECKOUT-COUPON-02 was deleted\nconsole.log("REQ-CHECKOUT-COUPON-03");\n`
+    );
+
+    const specs: SpecFile[] = [
+      {
+        spec: "checkout/coupons",
+        title: "Coupons",
+        description: "",
+        category: "business",
+        touches: [],
+        rules: [
+          makeRule("REQ-CHECKOUT-COUPON-01", "Apply"),
+          makeRule("REQ-CHECKOUT-COUPON-02", "Remove"),
+          makeRule("REQ-CHECKOUT-COUPON-03", "List"),
+        ],
+        filePath: "src/checkout/coupons.sps.yaml",
+      },
+    ];
+
+    const result = analyzeCoverage(specs, dir);
+    expect(result.coveredRules).toBe(0);
+    expect(result.uncovered).toHaveLength(3);
+  });
+
+  it("matches REQ-* inside it() and test() calls too", () => {
+    const dir = mkdtempSync(join(tmpdir(), "sps-test-"));
+    mkdirSync(join(dir, "tests"), { recursive: true });
+    writeFileSync(
+      join(dir, "tests/coupons.test.ts"),
+      `it("[REQ-COVER-IT-01] applies", () => {});\ntest("[REQ-COVER-TEST-01] removes", () => {});\n`
+    );
+
+    const specs: SpecFile[] = [
+      {
+        spec: "x/y",
+        title: "Y",
+        description: "",
+        category: "business",
+        touches: [],
+        rules: [
+          makeRule("REQ-COVER-IT-01", "Apply"),
+          makeRule("REQ-COVER-TEST-01", "Remove"),
+        ],
+        filePath: "src/y.sps.yaml",
+      },
+    ];
+
+    const result = analyzeCoverage(specs, dir);
+    expect(result.coveredRules).toBe(2);
+  });
+
   it("calculates coverage percentage", () => {
     const dir = mkdtempSync(join(tmpdir(), "sps-test-"));
     mkdirSync(join(dir, "tests"), { recursive: true });
