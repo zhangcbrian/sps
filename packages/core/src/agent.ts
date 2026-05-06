@@ -52,6 +52,42 @@ export function generateAgentInstructions(
       lines.push(`  - When: ${rule.when}`);
       lines.push(`  - Then: ${rule.then}`);
 
+      if (rule.behavior) {
+        lines.push(`  - Surface: \`${rule.behavior.surface}\``);
+        if (
+          rule.behavior.inputs &&
+          Object.keys(rule.behavior.inputs).length > 0
+        ) {
+          const pairs = Object.entries(rule.behavior.inputs)
+            .map(([k, v]) => `${k}: ${v}`)
+            .join(", ");
+          lines.push(`  - Inputs: ${pairs}`);
+        }
+        if (
+          rule.behavior.outputs &&
+          Object.keys(rule.behavior.outputs).length > 0
+        ) {
+          const pairs = Object.entries(rule.behavior.outputs)
+            .map(([k, v]) => `${k}: ${v}`)
+            .join(", ");
+          lines.push(`  - Outputs: ${pairs}`);
+        }
+        if (rule.behavior.invariants && rule.behavior.invariants.length > 0) {
+          for (const inv of rule.behavior.invariants) {
+            lines.push(`  - Invariant: ${inv}`);
+          }
+        }
+        if (rule.behavior.errors && rule.behavior.errors.length > 0) {
+          for (const e of rule.behavior.errors) {
+            lines.push(`  - Error \`${e.code}\`: ${e.when}`);
+          }
+        }
+      }
+
+      if (rule.superseded_by) {
+        lines.push(`  - Superseded by: ${rule.superseded_by}`);
+      }
+
       if (rule.edge_cases.length > 0) {
         for (const ec of rule.edge_cases) {
           lines.push(`  - Edge case: ${ec.case} → ${ec.decision}`);

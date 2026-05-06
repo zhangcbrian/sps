@@ -49,11 +49,114 @@ export function validateSpec(
 
     if (
       rule.status &&
-      !["active", "proposed", "deprecated"].includes(rule.status as string)
+      !["active", "proposed", "deprecated", "superseded", "removed"].includes(
+        rule.status as string
+      )
     ) {
       errors.push(
-        `${prefix}: "status" must be "active", "proposed", or "deprecated".`
+        `${prefix}: "status" must be one of: active, proposed, deprecated, superseded, removed.`
       );
+    }
+
+    if (rule.status === "superseded") {
+      if (
+        rule.superseded_by === undefined ||
+        rule.superseded_by === null ||
+        rule.superseded_by === ""
+      ) {
+        errors.push(
+          `${prefix}: rules with status="superseded" must declare \`superseded_by: REQ-…\`.`
+        );
+      } else if (typeof rule.superseded_by !== "string") {
+        errors.push(
+          `${prefix}: \`superseded_by\` must be a string lineage ID (got ${typeof rule.superseded_by}).`
+        );
+      }
+    } else if (
+      rule.superseded_by !== undefined &&
+      rule.superseded_by !== null &&
+      typeof rule.superseded_by !== "string"
+    ) {
+      errors.push(
+        `${prefix}: \`superseded_by\` must be a string lineage ID (got ${typeof rule.superseded_by}).`
+      );
+    }
+
+    if (rule.behavior !== undefined) {
+      if (
+        typeof rule.behavior !== "object" ||
+        rule.behavior === null ||
+        Array.isArray(rule.behavior)
+      ) {
+        errors.push(`${prefix}.behavior: must be an object.`);
+      } else {
+        const b = rule.behavior as Record<string, unknown>;
+        if (typeof b.surface !== "string" || b.surface.length === 0) {
+          errors.push(
+            `${prefix}.behavior.surface: required string (function path, route, or component identifier).`
+          );
+        }
+
+        if ("invariants" in b) {
+          if (!Array.isArray(b.invariants)) {
+            errors.push(
+              `${prefix}.behavior.invariants: must be an array of strings.`
+            );
+          } else {
+            for (let j = 0; j < b.invariants.length; j++) {
+              if (typeof b.invariants[j] !== "string") {
+                errors.push(
+                  `${prefix}.behavior.invariants[${j}]: must be a string.`
+                );
+              }
+            }
+          }
+        }
+
+        for (const ioField of ["inputs", "outputs"] as const) {
+          if (!(ioField in b)) continue;
+          const value = b[ioField];
+          if (
+            typeof value !== "object" ||
+            value === null ||
+            Array.isArray(value)
+          ) {
+            errors.push(
+              `${prefix}.behavior.${ioField}: must be an object mapping field names to type descriptions.`
+            );
+            continue;
+          }
+          for (const [k, v] of Object.entries(
+            value as Record<string, unknown>
+          )) {
+            if (typeof v !== "string") {
+              errors.push(
+                `${prefix}.behavior.${ioField}.${k}: must be a string type description.`
+              );
+            }
+          }
+        }
+
+        if ("errors" in b) {
+          if (!Array.isArray(b.errors)) {
+            errors.push(`${prefix}.behavior.errors: must be an array.`);
+          } else {
+            for (let j = 0; j < b.errors.length; j++) {
+              const e = b.errors[j] as Record<string, unknown>;
+              if (
+                !e ||
+                typeof e !== "object" ||
+                typeof e.code !== "string" ||
+                typeof e.when !== "string"
+              ) {
+                errors.push(
+                  `${prefix}.behavior.errors[${j}]: must be { code: string, when: string }.`
+                );
+              }
+            }
+          }
+        }
+      }
     }
 
     if ("category" in rule && validCategoryIds) {

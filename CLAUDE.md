@@ -1,4 +1,4 @@
-# SPS (Spec, Plan, Ship) — Development Guide
+# sls — Development Guide
 
 ## Project Structure
 
@@ -6,9 +6,9 @@ pnpm monorepo with three packages:
 
 ```
 packages/
-  core/     @sps/core    — shared library (TypeScript)
-  cli/      @sps/cli     — terminal interface (Commander)
-  portal/   @sps/portal  — web UI (Next.js 15, React 19)
+  core/     @sls/core    — shared library (TypeScript)
+  cli/      @sls/cli     — terminal interface (Commander); ships `sps` + `sls` bins
+  portal/   @sls/portal  — web UI (Next.js 15, React 19)
 ```
 
 ## Commands
@@ -49,6 +49,9 @@ The core library (`packages/core/src/`) contains these modules:
 | `agent.ts` | Generates AI agent instructions (CLAUDE.md) from specs |
 | `coverage.ts` | Scans test files for lineage IDs, reports coverage gaps |
 | `validate-touches.ts` | Checks `touches` references point to real directories |
+| `validate-uniqueness.ts` | Hard-fails on duplicate rule IDs across the corpus (v0.2) |
+| `validate-cross-refs.ts` | Hard-fails on REQ-* citations that don't resolve (v0.2) |
+| `validate-mutations.ts` | Compares against a git ref; flags edits to active rules' g/w/t (v0.2) |
 
 ## CLI Commands
 
@@ -58,14 +61,18 @@ The core library (`packages/core/src/`) contains these modules:
 | `sps submit "text"` | Full pipeline: interpret -> deduplicate -> place -> commit -> PR |
 | `sps scan` | Force rebuild `.sps/manifest.yaml` |
 | `sps status [dir]` | Health report (auto-rescans if stale) |
-| `sps validate` | Schema check all `.sps.yaml` files + touches warnings |
+| `sps validate` | Schema check + cross-ref check + touches check |
+| `sps validate --against=<ref>` | Add: mutation check against git ref (v0.2) |
+| `sps show <ID>` | Print one rule compactly (v0.2) |
+| `sps diff [ref]` | Rules added/modified/superseded/removed between refs (v0.2) |
 | `sps agent` | Generate AI agent instructions from specs |
 | `sps agent -o path` | Custom output path for agent instructions |
 | `sps coverage` | Analyze test coverage of spec rules |
 | `sps coverage --strict` | CI gate: fail if any rules lack tests |
-| `sps doctor` | Combined health check: validate + coverage + scan |
-| `sps status --json` | Machine-readable status output |
-| `sps scan --json` | Output manifest as JSON |
+| `sps mcp` | Run MCP server for agent integration (v0.2) |
+| `sps lint` | Style/quality check (v0.2) |
+| `sps doctor` | Combined health check: validate + coverage + scan + adoption checklist |
+| `--json` | Every command accepts `--json` for machine-readable output |
 
 ## Conventions
 
@@ -75,17 +82,15 @@ The core library (`packages/core/src/`) contains these modules:
 - **Principles:** `.sps/principles.yaml` — optional team principles
 - **Lineage IDs:** `REQ-{DOMAIN}-{MODULE}-{NN}` format (e.g., `REQ-CHECKOUT-COUPON-01`)
 - **Test traceability:** Include lineage IDs in test describe blocks: `describe("[REQ-CHECKOUT-COUPON-01] ...", () => {})`
-- **Schema fields:** Spec files use `spec`, `title`, `description`, `category`, `touches`, `rules`. Rules use `id`, `title`, `status`, `category`, `description`, `given`, `when`, `then`.
+- **Schema fields:** Spec files use `spec`, `title`, `description`, `category`, `touches`, `rules`. Rules use `id`, `title`, `status`, `category`, `description`, `given`, `when`, `then`. v0.2 adds optional `behavior:` block for structured invariants.
 - **Forbidden fields:** `domain`, `module`, `business_title`, `summary` (old format — use `spec`, `title` instead)
+- **Status enum:** `proposed | active | superseded | removed | deprecated`. Transitioning out of `active` requires `superseded_by: REQ-…` (v0.2).
 
 ## Testing
 
 - **Framework:** Vitest
-- **Core:** 60 tests across 16 test files
-- **CLI:** 5 tests across 3 test files
-- **Portal:** No unit tests (verified via build)
 - **Mocks:** LLM calls mocked via `vi.mock("@anthropic-ai/sdk")`; git calls mocked via `vi.mock("simple-git")`
 
-## Current Branch
+## Branching
 
-`feat/sps-rename-restructure` — major rename from Specstory/Specflow to SPS with co-located `.sps.yaml` files replacing centralized `specs/` directory.
+Active development happens on feature branches; `v0.2` is the current working branch. PRs land on `main`.

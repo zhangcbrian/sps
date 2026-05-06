@@ -3,29 +3,20 @@ import { deduplicate } from "../src/deduplicate.js";
 import type { DraftSpec, SpecFile } from "../src/types.js";
 import { DEFAULT_CONFIG } from "../src/config.js";
 
-vi.mock("@anthropic-ai/sdk", () => ({
-  default: class MockAnthropic {
-    messages = {
-      create: vi.fn().mockResolvedValue({
-        content: [
-          {
-            type: "text",
-            text: JSON.stringify({
-              matches: [
-                {
-                  existing_rule_id: "REQ-PAY-CHECKOUT-03",
-                  draft_rule_index: 0,
-                  relationship: "extends",
-                  confidence: 0.85,
-                  explanation: "Both deal with checkout modifications",
-                },
-              ],
-            }),
-          },
-        ],
-      }),
-    };
-  },
+vi.mock("ai", () => ({
+  generateObject: vi.fn().mockResolvedValue({
+    object: {
+      matches: [
+        {
+          existing_rule_id: "REQ-PAY-CHECKOUT-03",
+          draft_rule_index: 0,
+          relationship: "extends",
+          confidence: 0.85,
+          explanation: "Both deal with checkout modifications",
+        },
+      ],
+    },
+  }),
 }));
 
 const makeRule = (overrides = {}) => ({

@@ -1,6 +1,6 @@
 {
-  "name": "@sps/portal",
-  "version": "0.1.0",
+  "name": "@sls/portal",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev --port 4000",
@@ -8,7 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
-    "@sps/core": "workspace:*",
+    "@sls/core": "workspace:*",
     "next": "^15.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

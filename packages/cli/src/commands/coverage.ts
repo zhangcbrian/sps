@@ -1,10 +1,32 @@
-import { loadSpecs, analyzeCoverage } from "@sps/core";
+import { loadSpecs, analyzeCoverage } from "@sls/core";
 import chalk from "chalk";
 
-export async function coverageCommand(options: { strict?: boolean }) {
+interface CoverageOptions {
+  strict?: boolean;
+  json?: boolean;
+}
+
+export async function coverageCommand(options: CoverageOptions = {}) {
   const repoRoot = process.cwd();
   const specs = loadSpecs(repoRoot);
   const result = analyzeCoverage(specs, repoRoot);
+
+  if (options.json) {
+    console.log(
+      JSON.stringify(
+        {
+          ok: !options.strict || result.uncovered.length === 0,
+          ...result,
+        },
+        null,
+        2
+      )
+    );
+    if (options.strict && result.uncovered.length > 0) {
+      process.exit(1);
+    }
+    return;
+  }
 
   console.log("\nSPS Test Coverage Report");
   console.log("========================");

@@ -41,8 +41,7 @@ export const DEFAULT_CONFIG: SpsConfig = {
     },
   ],
   llm: {
-    provider: "anthropic",
-    model: "claude-sonnet-4-6",
+    model: "anthropic/claude-opus-4-7",
   },
   git: {
     branch_prefix: "spec/",

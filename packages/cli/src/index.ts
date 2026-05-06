@@ -8,26 +8,38 @@ import { scanCommand } from "./commands/scan.js";
 import { agentCommand } from "./commands/agent.js";
 import { coverageCommand } from "./commands/coverage.js";
 import { doctorCommand } from "./commands/doctor.js";
+import { showCommand } from "./commands/show.js";
+import { diffCommand } from "./commands/diff.js";
+import { mcpCommand } from "./commands/mcp.js";
+import { lintCommand } from "./commands/lint.js";
 
 const program = new Command();
 
 program
   .name("sps")
   .description(
-    "Spec, Plan, Ship — turn natural language requirements into structured, traceable specs in git"
+    "sls — turn natural language requirements into structured, traceable specs in git"
   )
-  .version("0.1.0");
+  .version("0.2.0");
 
 program
   .command("init")
-  .description("Initialize SPS in the current repo")
+  .description(
+    "Initialize sls in the current repo. With --ci=github, writes .github/workflows/sls.yml. With --ci=husky, writes .husky/pre-push."
+  )
+  .option("--ci <target>", "Scaffold CI/hook integration: github | husky")
   .action(initCommand);
 
 program
   .command("submit")
-  .description("Submit a new requirement")
+  .description(
+    "Submit a new requirement. Without --offline, runs the LLM pipeline (interpret → dedup → organize → commit). With --offline <path>, takes a hand-authored YAML draft and skips the LLM."
+  )
   .argument("[description]", "Feature description in natural language")
-  .option("--guided", "Use guided mode (interactive conversation)")
+  .option(
+    "--offline <path>",
+    "Submit a hand-authored draft YAML file (skips interpret + deduplicate)"
+  )
   .option(
     "--author <email>",
     "Author email",
@@ -45,7 +57,10 @@ program
 
 program
   .command("validate")
-  .description("Validate all specs against schema")
+  .description("Validate all specs (schema, ID uniqueness, cross-refs, optional mutation check)")
+  .option("--against <ref>", "Compare against a git ref to detect active-rule mutations (e.g. origin/main)")
+  .option("--strict-touches", "Treat touches misses as hard errors instead of warnings")
+  .option("--json", "Output as JSON")
   .action(validateCommand);
 
 program
@@ -55,20 +70,53 @@ program
   .action(scanCommand);
 
 program
+  .command("show")
+  .description("Print one rule compactly (ideal for agent context loading)")
+  .argument("<id>", "Rule lineage ID, e.g. REQ-CHECKOUT-COUPON-01")
+  .option("--json", "Output as JSON")
+  .action(showCommand);
+
+program
+  .command("diff")
+  .description("Show rules added/modified/transitioned/removed between HEAD and a git ref")
+  .argument("[ref]", "Git ref to compare against (default: origin/main)")
+  .option("--json", "Output as JSON")
+  .action(diffCommand);
+
+program
   .command("agent")
   .description("Generate AI agent instructions from specs")
   .option("-o, --output <path>", "Output file path (default: CLAUDE.md)")
+  .option("--json", "Output a JSON summary instead of human-readable text")
   .action(agentCommand);
 
 program
   .command("coverage")
   .description("Analyze test coverage of spec rules")
   .option("--strict", "Exit with code 1 if any rules lack test coverage")
+  .option("--json", "Output as JSON")
   .action(coverageCommand);
 
 program
   .command("doctor")
   .description("Run a full health check: validate, coverage, scan")
+  .option("--json", "Output as JSON")
   .action(doctorCommand);
+
+program
+  .command("mcp")
+  .description(
+    "Run an MCP stdio server exposing the spec corpus to agents (Claude Code, Codex, Cursor, etc.)"
+  )
+  .action(mcpCommand);
+
+program
+  .command("lint")
+  .description(
+    "Style/quality linter — flags oversized rules, oversized specs, and behavioral rules missing a behavior block"
+  )
+  .option("--strict", "Exit with code 1 if any findings are reported")
+  .option("--json", "Output as JSON")
+  .action(lintCommand);
 
 program.parse();
