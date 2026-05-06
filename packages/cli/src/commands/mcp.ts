@@ -5,8 +5,8 @@ import {
   loadPrinciples,
   analyzeCoverage,
   diffSpecs,
-} from "@specflow/core";
-import type { SpecFile, SpecRule } from "@specflow/core";
+} from "@sls/core";
+import type { SpecFile, SpecRule } from "@sls/core";
 import { z } from "zod";
 
 interface RuleSummary {
@@ -44,10 +44,10 @@ function jsonText(value: unknown) {
  */
 export function buildMcpServer(repoRoot: string): McpServer {
   const server = new McpServer(
-    { name: "specflow", version: "0.2.0" },
+    { name: "sls", version: "0.2.0" },
     {
       instructions:
-        "specflow exposes structured spec rules from the current repo. Use list_rules / search_rules to find work, then get_rule for full context. find_rules_by_touches scopes to a file path. coverage_for_path reports which rules a test path covers. diff_specs surfaces what a branch changes vs a git ref.",
+        "sls exposes structured spec rules from the current repo. Use list_rules / search_rules to find work, then get_rule for full context. find_rules_by_touches scopes to a file path. coverage_for_path reports which rules a test path covers. diff_specs surfaces what a branch changes vs a git ref.",
     }
   );
 

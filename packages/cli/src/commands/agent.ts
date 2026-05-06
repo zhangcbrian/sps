@@ -1,4 +1,4 @@
-import { loadSpecs, generateAgentInstructions, loadPrinciples } from "@specflow/core";
+import { loadSpecs, generateAgentInstructions, loadPrinciples } from "@sls/core";
 import { writeFileSync } from "fs";
 import { join } from "path";
 import chalk from "chalk";

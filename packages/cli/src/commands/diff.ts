@@ -1,4 +1,4 @@
-import { loadSpecs, diffSpecs } from "@specflow/core";
+import { loadSpecs, diffSpecs } from "@sls/core";
 import chalk from "chalk";
 
 interface DiffOptions {

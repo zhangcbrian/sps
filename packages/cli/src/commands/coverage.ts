@@ -1,4 +1,4 @@
-import { loadSpecs, analyzeCoverage } from "@specflow/core";
+import { loadSpecs, analyzeCoverage } from "@sls/core";
 import chalk from "chalk";
 
 interface CoverageOptions {

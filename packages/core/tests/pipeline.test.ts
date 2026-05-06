@@ -85,7 +85,7 @@ describe("submitDraftFile", () => {
     vi.mocked(deduplicate).mockClear();
     vi.mocked(createSpecBranch).mockClear();
 
-    const dir = mkdtempSync(join(tmpdir(), "specflow-offline-"));
+    const dir = mkdtempSync(join(tmpdir(), "sls-offline-"));
     const draftPath = join(dir, "draft.yaml");
     writeFileSync(
       draftPath,
@@ -124,7 +124,7 @@ rules:
   });
 
   it("rejects malformed draft files", async () => {
-    const dir = mkdtempSync(join(tmpdir(), "specflow-offline-"));
+    const dir = mkdtempSync(join(tmpdir(), "sls-offline-"));
     const draftPath = join(dir, "broken.yaml");
     writeFileSync(draftPath, "this is not a valid spec\n");
 
@@ -139,7 +139,7 @@ rules:
   });
 
   it("rejects offline drafts that cite unresolved REQ-* IDs", async () => {
-    const dir = mkdtempSync(join(tmpdir(), "specflow-offline-"));
+    const dir = mkdtempSync(join(tmpdir(), "sls-offline-"));
     const draftPath = join(dir, "draft.yaml");
     writeFileSync(
       draftPath,

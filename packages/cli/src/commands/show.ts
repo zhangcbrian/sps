@@ -1,5 +1,5 @@
-import { loadSpecs } from "@specflow/core";
-import type { SpecRule, SpecFile } from "@specflow/core";
+import { loadSpecs } from "@sls/core";
+import type { SpecRule, SpecFile } from "@sls/core";
 import chalk from "chalk";
 
 interface ShowOptions {

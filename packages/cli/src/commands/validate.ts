@@ -6,8 +6,8 @@ import {
   validateUniqueness,
   validateCrossRefs,
   validateMutations,
-} from "@specflow/core";
-import type { MutationError } from "@specflow/core";
+} from "@sls/core";
+import type { MutationError } from "@sls/core";
 import chalk from "chalk";
 
 interface ValidateOptions {

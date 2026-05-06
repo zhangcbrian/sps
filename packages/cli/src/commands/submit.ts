@@ -1,4 +1,4 @@
-import { submitRequirement, submitDraftFile } from "@specflow/core";
+import { submitRequirement, submitDraftFile } from "@sls/core";
 import chalk from "chalk";
 import { createInterface } from "readline";
 

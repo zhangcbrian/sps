@@ -32,7 +32,7 @@ rules:
 `;
 
 async function makeGitRepo() {
-  const dir = mkdtempSync(join(tmpdir(), "specflow-diff-"));
+  const dir = mkdtempSync(join(tmpdir(), "sls-diff-"));
   mkdirSync(join(dir, "src/checkout"), { recursive: true });
   const git = simpleGit(dir);
   await git.init();

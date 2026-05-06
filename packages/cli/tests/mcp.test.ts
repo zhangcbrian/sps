@@ -56,7 +56,7 @@ describe("MCP server", () => {
   let dir: string;
 
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), "specflow-mcp-"));
+    dir = mkdtempSync(join(tmpdir(), "sls-mcp-"));
     mkdirSync(join(dir, "src/checkout/coupons"), { recursive: true });
     writeFileSync(join(dir, "src/checkout/coupons/coupons.sps.yaml"), SPEC_BODY);
   });

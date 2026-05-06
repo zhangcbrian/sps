@@ -1,4 +1,4 @@
-import { loadConfig, loadSpecs } from "@specflow/core";
+import { loadConfig, loadSpecs } from "@sls/core";
 import chalk from "chalk";
 
 export async function statusCommand(

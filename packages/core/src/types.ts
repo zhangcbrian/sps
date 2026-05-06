@@ -49,7 +49,7 @@ export interface PromptsConfig {
    * Optional repo-specific prose appended to the interpret system prompt.
    * Use this to inject domain conventions ("money is always cents",
    * "multi-tenant procedures default to org-scoped", etc.) without
-   * forking specflow.
+   * forking sls.
    */
   interpret_postlude?: string;
 }

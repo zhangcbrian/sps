@@ -30,7 +30,7 @@ rules:
 `;
 
 async function makeGitRepo() {
-  const dir = mkdtempSync(join(tmpdir(), "specflow-mut-"));
+  const dir = mkdtempSync(join(tmpdir(), "sls-mut-"));
   mkdirSync(join(dir, "src/checkout"), { recursive: true });
   const git = simpleGit(dir);
   await git.init();

@@ -1,4 +1,4 @@
-# specflow
+# sls
 
 Turn plain-English requirements into structured, traceable specs that live next to your code.
 
@@ -15,7 +15,7 @@ src/checkout/coupons/coupons.sps.yaml   (structured YAML, lineage IDs, given/whe
 
 Requirements get lost. A PM describes a feature in Slack. An engineer interprets it differently. Six months later, nobody knows why a rule exists.
 
-specflow fixes this: one `.sps.yaml` file per feature area, co-located with the code, readable by both business users and engineers, tracked in git with full traceability.
+sls fixes this: one `.sps.yaml` file per feature area, co-located with the code, readable by both business users and engineers, tracked in git with full traceability.
 
 ## Get Started
 
@@ -24,7 +24,7 @@ sps init                                          # creates .sps/config.yaml + e
 sps submit "users need discount codes at checkout" # LLM interprets → dedup → commit → PR
 ```
 
-That's it. specflow creates a `.sps.yaml` file next to your code, assigns lineage IDs, and opens a PR.
+That's it. sls creates a `.sps.yaml` file next to your code, assigns lineage IDs, and opens a PR.
 
 ## What a Spec Looks Like
 
@@ -102,7 +102,7 @@ sps agent                                          # writes CLAUDE.md
 sps agent -o .github/copilot-instructions.md       # or any agent format
 ```
 
-Or run specflow as an MCP server and let the agent query specs on demand:
+Or run sls as an MCP server and let the agent query specs on demand:
 
 ```bash
 sps mcp
@@ -146,9 +146,9 @@ src/
 
 | Package | What |
 |---------|------|
-| `@specflow/core` | Engine: interpret, deduplicate, validate, scan, coverage, agent |
-| `@specflow/cli` | `sps` (alias `specflow`) binary — all commands above |
-| `@specflow/portal` | Next.js web UI — submit, browse, review specs as readable cards |
+| `@sls/core` | Engine: interpret, deduplicate, validate, scan, coverage, agent |
+| `@sls/cli` | `sps` (alias `sls`) binary — all commands above |
+| `@sls/portal` | Next.js web UI — submit, browse, review specs as readable cards |
 
 ## License
 

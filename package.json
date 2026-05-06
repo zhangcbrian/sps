@@ -1,6 +1,6 @@
 {
-  "name": "specflow",
-  "description": "specflow — structured specs co-located with your code",
+  "name": "sls",
+  "description": "sls — structured specs co-located with your code",
   "private": true,
   "packageManager": "pnpm@10.29.3",
   "scripts": {

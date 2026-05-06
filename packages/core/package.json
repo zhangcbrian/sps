@@ -1,7 +1,7 @@
 {
-  "name": "@specflow/core",
+  "name": "@sls/core",
   "version": "0.2.0",
-  "description": "specflow core engine — interpret, deduplicate, validate, scan, coverage",
+  "description": "sls core engine — interpret, deduplicate, validate, scan, coverage",
   "license": "MIT",
   "repository": {
     "type": "git",

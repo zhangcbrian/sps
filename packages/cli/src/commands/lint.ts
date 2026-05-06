@@ -1,4 +1,4 @@
-import { loadSpecs, lintSpecs } from "@specflow/core";
+import { loadSpecs, lintSpecs } from "@sls/core";
 import chalk from "chalk";
 
 interface LintOptions {

@@ -1,4 +1,4 @@
-import { loadConfig, loadSpecs, buildManifest } from "@specflow/core";
+import { loadConfig, loadSpecs, buildManifest } from "@sls/core";
 import { writeFileSync, mkdirSync } from "fs";
 import { join } from "path";
 import { stringify } from "yaml";

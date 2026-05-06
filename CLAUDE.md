@@ -1,4 +1,4 @@
-# specflow — Development Guide
+# sls — Development Guide
 
 ## Project Structure
 
@@ -6,9 +6,9 @@ pnpm monorepo with three packages:
 
 ```
 packages/
-  core/     @specflow/core    — shared library (TypeScript)
-  cli/      @specflow/cli     — terminal interface (Commander); ships `sps` + `specflow` bins
-  portal/   @specflow/portal  — web UI (Next.js 15, React 19)
+  core/     @sls/core    — shared library (TypeScript)
+  cli/      @sls/cli     — terminal interface (Commander); ships `sps` + `sls` bins
+  portal/   @sls/portal  — web UI (Next.js 15, React 19)
 ```
 
 ## Commands
