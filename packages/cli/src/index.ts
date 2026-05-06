@@ -24,7 +24,10 @@ program
 
 program
   .command("init")
-  .description("Initialize SPS in the current repo")
+  .description(
+    "Initialize specflow in the current repo. With --ci=github, writes .github/workflows/specflow.yml. With --ci=husky, writes .husky/pre-push."
+  )
+  .option("--ci <target>", "Scaffold CI/hook integration: github | husky")
   .action(initCommand);
 
 program

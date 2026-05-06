@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { existsSync, readFileSync } from "fs";
+import { existsSync, readFileSync, mkdirSync, writeFileSync } from "fs";
 import { join } from "path";
 import { mkdtempSync } from "fs";
 import { tmpdir } from "os";
@@ -21,7 +21,7 @@ describe("init command", () => {
     origCwd = process.cwd();
   });
 
-  it("creates .sps/config.yaml only — no specs directory", async () => {
+  it("creates .sps/config.yaml + example.sps.yaml on bare init", async () => {
     const dir = mkdtempSync(join(tmpdir(), "sps-cli-test-"));
     process.chdir(dir);
 
@@ -53,6 +53,59 @@ describe("init command", () => {
     const { initCommand } = await import("../src/commands/init.js");
     await initCommand();
     await initCommand();
+
+    process.chdir(origCwd);
+  });
+
+  it("scaffolds GitHub workflow with --ci=github", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "sps-cli-test-"));
+    process.chdir(dir);
+
+    const { initCommand } = await import("../src/commands/init.js");
+    await initCommand({ ci: "github" });
+
+    const target = join(dir, ".github/workflows/specflow.yml");
+    expect(existsSync(target)).toBe(true);
+    const content = readFileSync(target, "utf-8");
+    expect(content).toContain("sps validate --strict-touches");
+    expect(content).toContain("sps coverage --strict");
+    expect(content).toContain("sps lint");
+
+    process.chdir(origCwd);
+  });
+
+  it("scaffolds husky pre-push hook with --ci=husky", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "sps-cli-test-"));
+    process.chdir(dir);
+
+    const { initCommand } = await import("../src/commands/init.js");
+    await initCommand({ ci: "husky" });
+
+    const target = join(dir, ".husky/pre-push");
+    expect(existsSync(target)).toBe(true);
+    const content = readFileSync(target, "utf-8");
+    expect(content).toContain("sps validate --strict-touches");
+
+    process.chdir(origCwd);
+  });
+
+  it("appends to an existing pre-push hook without overwriting", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "sps-cli-test-"));
+    process.chdir(dir);
+
+    mkdirSync(join(dir, ".husky"), { recursive: true });
+    writeFileSync(
+      join(dir, ".husky/pre-push"),
+      "#!/usr/bin/env sh\nnpm test\n",
+      "utf-8"
+    );
+
+    const { initCommand } = await import("../src/commands/init.js");
+    await initCommand({ ci: "husky" });
+
+    const content = readFileSync(join(dir, ".husky/pre-push"), "utf-8");
+    expect(content).toContain("npm test");
+    expect(content).toContain("sps validate --strict-touches");
 
     process.chdir(origCwd);
   });
