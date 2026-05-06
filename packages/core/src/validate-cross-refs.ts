@@ -7,7 +7,14 @@ export interface UnresolvedRefError {
   ruleIndex: number;
   ruleId: string | null;
   unresolvedRef: string;
-  field: "description" | "given" | "when" | "then" | "notes" | "edge_case";
+  field:
+    | "description"
+    | "given"
+    | "when"
+    | "then"
+    | "notes"
+    | "edge_case"
+    | "superseded_by";
 }
 
 /**
@@ -58,9 +65,30 @@ export function validateCrossRefs(specs: SpecFile[]): UnresolvedRefError[] {
       scan(rule.given, spec, i, rule, "given");
       scan(rule.when, spec, i, rule, "when");
       scan(rule.then, spec, i, rule, "then");
+      scan(rule.notes, spec, i, rule, "notes");
       for (const ec of rule.edge_cases || []) {
         scan(ec.case, spec, i, rule, "edge_case");
         scan(ec.decision, spec, i, rule, "edge_case");
+      }
+
+      // Lifecycle link: a rule's superseded_by must resolve to a real
+      // rule. Schema validation only checks that the field is present
+      // (when status is "superseded") — it does not check that the
+      // target exists. A typo here silently breaks the supersedence
+      // chain.
+      if (
+        typeof rule.superseded_by === "string" &&
+        rule.superseded_by.length > 0 &&
+        rule.superseded_by !== rule.id &&
+        !knownIds.has(rule.superseded_by)
+      ) {
+        errors.push({
+          specFile: spec.filePath,
+          ruleIndex: i,
+          ruleId: rule.id,
+          unresolvedRef: rule.superseded_by,
+          field: "superseded_by",
+        });
       }
     }
   }

@@ -151,6 +151,31 @@ describe("MCP server", () => {
     await client.close();
   });
 
+  it("find_rules_by_touches matches after stripping monorepo roots", async () => {
+    const client = await startMcpClient(dir);
+    // The spec touches "billing"; the agent sends a real file path under
+    // src/billing. After stripping src/, the match should hit.
+    const result = await client.callTool({
+      name: "find_rules_by_touches",
+      arguments: { path: "src/billing/invoice.ts" },
+    });
+    const payload = JSON.parse(readToolJson(result).content[0].text);
+    expect(payload.count).toBeGreaterThan(0);
+    expect(payload.rules[0].matchedTouch).toBe("billing");
+    await client.close();
+  });
+
+  it("find_rules_by_touches matches via apps/<name>/src prefix too", async () => {
+    const client = await startMcpClient(dir);
+    const result = await client.callTool({
+      name: "find_rules_by_touches",
+      arguments: { path: "apps/web/src/billing/invoice.ts" },
+    });
+    const payload = JSON.parse(readToolJson(result).content[0].text);
+    expect(payload.count).toBeGreaterThan(0);
+    await client.close();
+  });
+
   it("get_principles returns an empty list when none configured", async () => {
     const client = await startMcpClient(dir);
     const result = await client.callTool({ name: "get_principles", arguments: {} });

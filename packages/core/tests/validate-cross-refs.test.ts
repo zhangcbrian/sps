@@ -102,6 +102,31 @@ describe("validateCrossRefs", () => {
     expect(validateCrossRefs(specs)).toEqual([]);
   });
 
+  it("flags an unresolved superseded_by link", () => {
+    const specs = [
+      makeSpec("src/a/a.sps.yaml", [
+        makeRule("REQ-A-X-01", { status: "superseded" }),
+      ]),
+    ];
+    specs[0].rules[0].superseded_by = "REQ-GHOST-99";
+    const errors = validateCrossRefs(specs);
+    expect(errors).toHaveLength(1);
+    expect(errors[0].field).toBe("superseded_by");
+    expect(errors[0].unresolvedRef).toBe("REQ-GHOST-99");
+  });
+
+  it("does not flag a superseded_by link that resolves", () => {
+    const specs = [
+      makeSpec("src/a/a.sps.yaml", [
+        makeRule("REQ-A-X-01", { status: "superseded" }),
+        makeRule("REQ-A-X-02"),
+      ]),
+    ];
+    specs[0].rules[0].superseded_by = "REQ-A-X-02";
+    const errors = validateCrossRefs(specs);
+    expect(errors.filter((e) => e.field === "superseded_by")).toEqual([]);
+  });
+
   it("does not match REQ- without trailing digits", () => {
     const specs = [
       makeSpec("src/a/a.sps.yaml", [

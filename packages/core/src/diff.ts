@@ -183,7 +183,21 @@ function normalize(s: string): string {
   return s.replace(/\s+/g, " ").trim();
 }
 
+/**
+ * Stable JSON with deeply sorted keys. See validate-mutations.ts for the
+ * "shallow keys-array replacer silently strips nested fields" gotcha.
+ */
 function canonical(value: unknown): string {
   if (value === undefined || value === null) return "";
-  return JSON.stringify(value, Object.keys(value as object).sort());
+  return JSON.stringify(stableSort(value));
+}
+
+function stableSort(value: unknown): unknown {
+  if (value === null || typeof value !== "object") return value;
+  if (Array.isArray(value)) return value.map(stableSort);
+  const sorted: Record<string, unknown> = {};
+  for (const key of Object.keys(value as Record<string, unknown>).sort()) {
+    sorted[key] = stableSort((value as Record<string, unknown>)[key]);
+  }
+  return sorted;
 }

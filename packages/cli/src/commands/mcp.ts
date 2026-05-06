@@ -132,7 +132,7 @@ export function buildMcpServer(repoRoot: string): McpServer {
     {
       title: "Find rules by touched path",
       description:
-        "Return every rule whose spec's `touches` list overlaps with a given file or directory path. Use to scope context for a code change.",
+        "Return every rule whose spec's `touches` list overlaps with a given file or directory path. Common repo roots (src/, apps/<name>/src/, packages/<name>/src/) are stripped before comparing, so passing a real file path like `apps/web/src/server/routers/events.ts` matches a touch entry of `src/server/routers/events.ts` (or `events.ts`, etc.).",
       inputSchema: {
         path: z.string(),
       },
@@ -142,7 +142,7 @@ export function buildMcpServer(repoRoot: string): McpServer {
       const matches: Array<RuleSummary & { matchedTouch: string }> = [];
       for (const spec of specs) {
         for (const touch of spec.touches ?? []) {
-          if (path.startsWith(touch) || touch.startsWith(path)) {
+          if (pathOverlaps(touch, path)) {
             for (const rule of spec.rules) {
               const summary = summarize(spec, rule);
               if (!summary) continue;
@@ -266,4 +266,42 @@ function countBy<T>(items: T[], key: (item: T) => string): Record<string, number
     out[k] = (out[k] ?? 0) + 1;
   }
   return out;
+}
+
+/**
+ * True when `touch` (as written in a spec's touches list) refers to the
+ * same path or directory as `query` (a real file/dir path the agent
+ * passes in). Strips common monorepo roots from the query so a touch of
+ * "billing" still matches a query of "src/billing/invoice.ts" or
+ * "apps/web/src/billing".
+ */
+export function pathOverlaps(touch: string, query: string): boolean {
+  const candidates = pathCandidates(query);
+  for (const candidate of candidates) {
+    if (overlapStrict(touch, candidate)) return true;
+  }
+  return false;
+}
+
+function overlapStrict(a: string, b: string): boolean {
+  if (a === b) return true;
+  if (b.startsWith(a + "/")) return true;
+  if (a.startsWith(b + "/")) return true;
+  return false;
+}
+
+function pathCandidates(path: string): string[] {
+  const candidates = new Set<string>([path]);
+  const stripPrefixes = [
+    /^src\//,
+    /^apps\/[^/]+\/src\//,
+    /^apps\/[^/]+\//,
+    /^packages\/[^/]+\/src\//,
+    /^packages\/[^/]+\//,
+  ];
+  for (const prefix of stripPrefixes) {
+    const stripped = path.replace(prefix, "");
+    if (stripped !== path) candidates.add(stripped);
+  }
+  return [...candidates];
 }

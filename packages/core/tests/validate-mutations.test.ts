@@ -118,4 +118,138 @@ describe("validateMutations", () => {
     const errors = await validateMutations(specs, dir, "HEAD");
     expect(errors).toEqual([]);
   });
+
+  it("flags an active rule that was silently removed from a spec", async () => {
+    const fullSpec = `spec: checkout/checkout
+title: Checkout
+description: x
+category: business
+touches: []
+rules:
+  - id: REQ-CHK-FLOW-01
+    title: Rule one
+    status: active
+    category: business
+    description: x
+    given: g
+    when: w
+    then: t
+    examples: []
+    edge_cases: []
+    tests: []
+  - id: REQ-CHK-FLOW-02
+    title: Rule two
+    status: active
+    category: business
+    description: x
+    given: g
+    when: w
+    then: t
+    examples: []
+    edge_cases: []
+    tests: []
+`;
+    writeFileSync(join(dir, SPEC_PATH), fullSpec);
+    await git.add(SPEC_PATH);
+    await git.commit("initial");
+
+    // Remove the second rule.
+    writeFileSync(
+      join(dir, SPEC_PATH),
+      fullSpec.replace(
+        /  - id: REQ-CHK-FLOW-02[\s\S]*$/,
+        ""
+      )
+    );
+
+    const specs = loadSpecs(dir);
+    const errors = await validateMutations(specs, dir, "HEAD");
+    expect(
+      errors.some(
+        (e) =>
+          e.ruleId === "REQ-CHK-FLOW-02" &&
+          e.field === "transition" &&
+          e.after === "(removed)"
+      )
+    ).toBe(true);
+  });
+
+  it("does not flag rules that moved to a different spec file", async () => {
+    const oldPath = "src/checkout/checkout.sps.yaml";
+    const oldSpec = `spec: checkout/checkout
+title: Checkout
+description: x
+category: business
+touches: []
+rules:
+  - id: REQ-CHK-FLOW-01
+    title: Rule
+    status: active
+    category: business
+    description: x
+    given: g
+    when: w
+    then: t
+    examples: []
+    edge_cases: []
+    tests: []
+`;
+    writeFileSync(join(dir, oldPath), oldSpec);
+    await git.add(oldPath);
+    await git.commit("initial");
+
+    // Move the file.
+    const newPath = "src/checkout/flow.sps.yaml";
+    mkdirSync(join(dir, "src/checkout"), { recursive: true });
+    writeFileSync(
+      join(dir, newPath),
+      oldSpec.replace("checkout/checkout", "checkout/flow")
+    );
+    // Remove the old file by overwriting and then physically deleting.
+    // loadSpecs only sees what's on disk, so the simplest is to leave the
+    // old path absent.
+    const { unlinkSync } = await import("fs");
+    unlinkSync(join(dir, oldPath));
+
+    const specs = loadSpecs(dir);
+    const errors = await validateMutations(specs, dir, "HEAD");
+    expect(errors.filter((e) => e.field === "transition")).toEqual([]);
+  });
+
+  it("flags nested behavior changes (inputs/outputs/errors)", async () => {
+    const withBehavior = (inputType: string) => `spec: checkout/checkout
+title: Checkout
+description: x
+category: business
+touches: []
+rules:
+  - id: REQ-CHK-FLOW-01
+    title: Rule
+    status: active
+    category: business
+    description: x
+    given: g
+    when: w
+    then: t
+    behavior:
+      surface: trpc.checkout.flow
+      inputs:
+        limit: ${inputType}
+    examples: []
+    edge_cases: []
+    tests: []
+`;
+    writeFileSync(join(dir, SPEC_PATH), withBehavior("number"));
+    await git.add(SPEC_PATH);
+    await git.commit("initial");
+
+    writeFileSync(join(dir, SPEC_PATH), withBehavior("string"));
+
+    const specs = loadSpecs(dir);
+    const errors = await validateMutations(specs, dir, "HEAD");
+    const behaviorError = errors.find((e) => e.field === "behavior");
+    expect(behaviorError).toBeDefined();
+    expect(behaviorError?.before).toContain("number");
+    expect(behaviorError?.after).toContain("string");
+  });
 });
