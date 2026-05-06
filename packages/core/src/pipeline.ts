@@ -8,6 +8,8 @@ import { organize } from "./organize.js";
 import { buildTrace } from "./trace.js";
 import { createSpecBranch, buildPrDescription } from "./git.js";
 import { validateSpec } from "./schema.js";
+import { validateUniqueness } from "./validate-uniqueness.js";
+import { validateCrossRefs } from "./validate-cross-refs.js";
 import type {
   SubmissionContext,
   DeduplicationResult,
@@ -115,14 +117,58 @@ async function finalize(
 
   const specContent = stringify(specObj, { lineWidth: 100 });
 
+  const draftAsSpecFile: SpecFile = {
+    ...draft,
+    filePath: organized.filePath,
+  } as SpecFile;
   const errors = validateSpec(
-    { ...draft, filePath: organized.filePath } as SpecFile,
+    draftAsSpecFile,
     config.schema,
     config.categories
   );
   if (errors.length > 0) {
     throw new Error(
       `Generated spec has validation errors:\n${errors.join("\n")}`
+    );
+  }
+
+  // Cross-corpus validation: a draft can only be committed if it doesn't
+  // collide with existing IDs and doesn't cite missing rules. Without
+  // these gates, `sps submit --offline` could produce a branch that
+  // immediately fails the matching `sps validate` checks downstream.
+  // Existing specs whose path matches the new draft are excluded from
+  // the corpus snapshot — when re-submitting an updated draft for an
+  // existing spec, the draft replaces the prior version rather than
+  // colliding with it.
+  const corpus: SpecFile[] = [
+    ...existingSpecs.filter((s) => s.filePath !== organized.filePath),
+    draftAsSpecFile,
+  ];
+  const duplicates = validateUniqueness(corpus);
+  if (duplicates.length > 0) {
+    const lines = duplicates
+      .map(
+        (d) =>
+          `  ${d.id}: ${d.occurrences.map((o) => o.specFile).join(", ")}`
+      )
+      .join("\n");
+    throw new Error(
+      `Generated spec collides with existing rule IDs:\n${lines}`
+    );
+  }
+  const unresolvedRefs = validateCrossRefs(corpus);
+  const draftRefs = unresolvedRefs.filter(
+    (u) => u.specFile === organized.filePath
+  );
+  if (draftRefs.length > 0) {
+    const lines = draftRefs
+      .map(
+        (u) =>
+          `  ${u.ruleId ?? `[${u.ruleIndex}]`} (${u.field}): cites "${u.unresolvedRef}"`
+      )
+      .join("\n");
+    throw new Error(
+      `Generated spec cites unresolved REQ-* IDs:\n${lines}`
     );
   }
 

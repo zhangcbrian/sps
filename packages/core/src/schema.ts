@@ -58,9 +58,27 @@ export function validateSpec(
       );
     }
 
-    if (rule.status === "superseded" && !rule.superseded_by) {
+    if (rule.status === "superseded") {
+      if (
+        rule.superseded_by === undefined ||
+        rule.superseded_by === null ||
+        rule.superseded_by === ""
+      ) {
+        errors.push(
+          `${prefix}: rules with status="superseded" must declare \`superseded_by: REQ-…\`.`
+        );
+      } else if (typeof rule.superseded_by !== "string") {
+        errors.push(
+          `${prefix}: \`superseded_by\` must be a string lineage ID (got ${typeof rule.superseded_by}).`
+        );
+      }
+    } else if (
+      rule.superseded_by !== undefined &&
+      rule.superseded_by !== null &&
+      typeof rule.superseded_by !== "string"
+    ) {
       errors.push(
-        `${prefix}: rules with status="superseded" must declare \`superseded_by: REQ-…\`.`
+        `${prefix}: \`superseded_by\` must be a string lineage ID (got ${typeof rule.superseded_by}).`
       );
     }
 

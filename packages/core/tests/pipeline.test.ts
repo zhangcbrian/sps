@@ -44,6 +44,13 @@ vi.mock("../src/loader.js", () => ({
   loadSpecs: vi.fn().mockReturnValue([]),
 }));
 
+vi.mock("../src/organize.js", async () => {
+  const actual = await vi.importActual<typeof import("../src/organize.js")>(
+    "../src/organize.js"
+  );
+  return actual;
+});
+
 describe("submitRequirement", () => {
   it("runs the full pipeline: interpret → deduplicate → organize → trace → git", async () => {
     const { interpret } = await import("../src/interpret.js");
@@ -129,5 +136,40 @@ rules:
         mode: "quick",
       })
     ).rejects.toThrow("rules");
+  });
+
+  it("rejects offline drafts that cite unresolved REQ-* IDs", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "specflow-offline-"));
+    const draftPath = join(dir, "draft.yaml");
+    writeFileSync(
+      draftPath,
+      `spec: billing/refunds
+title: Refunds
+description: x
+category: business
+touches: []
+rules:
+  - id: REQ-BIL-REF-09
+    title: Refund within 30 days
+    status: active
+    category: business
+    description: Builds on REQ-GHOST-99 which does not exist.
+    given: g
+    when: w
+    then: t
+    examples: []
+    edge_cases: []
+    tests: []
+`
+    );
+
+    await expect(
+      submitDraftFile(dir, draftPath, {
+        text: "(offline)",
+        submittedBy: "test@test",
+        source: "cli",
+        mode: "quick",
+      })
+    ).rejects.toThrow("unresolved");
   });
 });

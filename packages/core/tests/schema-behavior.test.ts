@@ -161,6 +161,31 @@ describe("validateSpec — lifecycle statuses", () => {
     expect(valid).toEqual([]);
   });
 
+  it("rejects a non-string superseded_by", () => {
+    const errors = validateSpec(
+      wrap({
+        ...baseRule,
+        status: "superseded",
+        superseded_by: ["REQ-X-Y-02"] as unknown,
+      }),
+      SCHEMA
+    );
+    expect(errors.some((e) => e.includes("superseded_by"))).toBe(true);
+    expect(errors.some((e) => e.includes("string"))).toBe(true);
+  });
+
+  it("rejects an empty-string superseded_by", () => {
+    const errors = validateSpec(
+      wrap({
+        ...baseRule,
+        status: "superseded",
+        superseded_by: "",
+      }),
+      SCHEMA
+    );
+    expect(errors.some((e) => e.includes("superseded_by"))).toBe(true);
+  });
+
   it("rejects unknown status values", () => {
     const errors = validateSpec(
       wrap({ ...baseRule, status: "made-up" }),

@@ -76,4 +76,61 @@ describe("generateAgentInstructions", () => {
     expect(output).toContain("# SPS Spec Rules");
     expect(output).toContain("No active spec rules found");
   });
+
+  it("renders the behavior block when present", () => {
+    const specs: SpecFile[] = [
+      {
+        spec: "checkout/coupons",
+        title: "Discount Codes",
+        description: "Coupon support",
+        category: "business",
+        touches: [],
+        rules: [
+          makeRule({
+            behavior: {
+              surface: "trpc.checkout.applyCoupon",
+              inputs: { code: "string", cartCents: "number" },
+              outputs: { discountCents: "number" },
+              invariants: ["totalCents >= 0"],
+              errors: [
+                { code: "INVALID_COUPON", when: "code not recognized" },
+              ],
+            },
+          }),
+        ],
+        filePath: "src/checkout/coupons.sps.yaml",
+      },
+    ];
+
+    const output = generateAgentInstructions(specs, []);
+    expect(output).toContain("Surface: `trpc.checkout.applyCoupon`");
+    expect(output).toContain("Inputs: code: string, cartCents: number");
+    expect(output).toContain("Outputs: discountCents: number");
+    expect(output).toContain("Invariant: totalCents >= 0");
+    expect(output).toContain("Error `INVALID_COUPON`: code not recognized");
+  });
+
+  it("renders superseded_by when present", () => {
+    const specs: SpecFile[] = [
+      {
+        spec: "checkout/old",
+        title: "Old",
+        description: "",
+        category: "business",
+        touches: [],
+        rules: [
+          makeRule({
+            id: "REQ-OLD-01",
+            status: "active",
+            title: "Old rule still active",
+          }),
+        ],
+        filePath: "src/checkout/old.sps.yaml",
+      },
+    ];
+    specs[0].rules[0].superseded_by = "REQ-NEW-09";
+
+    const output = generateAgentInstructions(specs, []);
+    expect(output).toContain("Superseded by: REQ-NEW-09");
+  });
 });

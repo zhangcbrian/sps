@@ -66,7 +66,6 @@ export async function doctorCommand(options: DoctorOptions = {}) {
   const touchesWarnings = validateTouches(specs, repoRoot, config);
   const coverage = analyzeCoverage(specs, repoRoot);
   const lintFindings = lintSpecs(specs);
-  const adoption = evaluateAdoption(repoRoot);
 
   const manifest = buildManifest(specs, config);
   const spsDir = join(repoRoot, ".sps");
@@ -74,6 +73,11 @@ export async function doctorCommand(options: DoctorOptions = {}) {
   const header = "# AUTO-GENERATED — do not edit. Run `sps scan` to refresh.\n\n";
   const content = header + stringify(manifest, { lineWidth: 100 });
   writeFileSync(join(spsDir, "manifest.yaml"), content, "utf-8");
+
+  // Adoption is evaluated AFTER the manifest write so the same run
+  // doesn't report `manifest_present: false` on a fresh repo where the
+  // Manifest section just rebuilt it.
+  const adoption = evaluateAdoption(repoRoot);
 
   const hasIssues =
     schemaFailures.length > 0 ||
