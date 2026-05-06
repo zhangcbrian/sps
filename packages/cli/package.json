@@ -26,10 +26,12 @@
     "dev": "tsx src/index.ts"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@specflow/core": "workspace:*",
     "chalk": "^5.4.0",
     "commander": "^13.0.0",
-    "yaml": "^2.8.3"
+    "yaml": "^2.8.3",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

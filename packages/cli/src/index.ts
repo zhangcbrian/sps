@@ -10,6 +10,7 @@ import { coverageCommand } from "./commands/coverage.js";
 import { doctorCommand } from "./commands/doctor.js";
 import { showCommand } from "./commands/show.js";
 import { diffCommand } from "./commands/diff.js";
+import { mcpCommand } from "./commands/mcp.js";
 
 const program = new Command();
 
@@ -91,5 +92,12 @@ program
   .description("Run a full health check: validate, coverage, scan")
   .option("--json", "Output as JSON")
   .action(doctorCommand);
+
+program
+  .command("mcp")
+  .description(
+    "Run an MCP stdio server exposing the spec corpus to agents (Claude Code, Codex, Cursor, etc.)"
+  )
+  .action(mcpCommand);
 
 program.parse();
