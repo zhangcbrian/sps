@@ -51,3 +51,6 @@ export type {
   DiffModifiedEntry,
   DiffTransitionEntry,
 } from "./diff.js";
+export { lintSpecs } from "./lint.js";
+export type { LintFinding, LintOptions } from "./lint.js";
+export { resolveModelId } from "./llm.js";

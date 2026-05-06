@@ -5,10 +5,26 @@ import type { SpecFile, SpecRule } from "./types.js";
 export interface MutationError {
   specFile: string;
   ruleId: string;
-  field: "title" | "given" | "when" | "then" | "behavior";
+  field: "title" | "given" | "when" | "then" | "behavior" | "transition";
   before: string;
   after: string;
 }
+
+/**
+ * Status transitions that are allowed without explicit explanation.
+ * `active → removed` is intentionally absent: removing an active behavior
+ * is exactly the kind of silent drift this validator exists to surface.
+ * The path is `active → superseded (with superseded_by)` instead.
+ */
+const ALLOWED_TRANSITIONS = new Set<string>([
+  "proposed→active",
+  "proposed→deprecated",
+  "proposed→removed",
+  "active→deprecated",
+  "active→superseded",
+  "deprecated→removed",
+  "superseded→removed",
+]);
 
 const TRACKED_TEXT_FIELDS = ["title", "given", "when", "then"] as const;
 
@@ -56,6 +72,22 @@ export async function validateMutations(
       if (!currentRule.id) continue;
       const beforeRule = beforeMap.get(currentRule.id);
       if (!beforeRule) continue;
+
+      const fromStatus = String(beforeRule.status ?? "");
+      const toStatus = String(currentRule.status ?? "");
+      if (fromStatus !== toStatus) {
+        const key = `${fromStatus}→${toStatus}`;
+        if (!ALLOWED_TRANSITIONS.has(key)) {
+          errors.push({
+            specFile: current.filePath,
+            ruleId: currentRule.id,
+            field: "transition",
+            before: fromStatus,
+            after: toStatus,
+          });
+        }
+      }
+
       if (beforeRule.status !== "active") continue;
 
       for (const field of TRACKED_TEXT_FIELDS) {

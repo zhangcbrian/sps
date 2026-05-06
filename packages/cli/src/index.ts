@@ -11,6 +11,7 @@ import { doctorCommand } from "./commands/doctor.js";
 import { showCommand } from "./commands/show.js";
 import { diffCommand } from "./commands/diff.js";
 import { mcpCommand } from "./commands/mcp.js";
+import { lintCommand } from "./commands/lint.js";
 
 const program = new Command();
 
@@ -50,6 +51,7 @@ program
   .command("validate")
   .description("Validate all specs (schema, ID uniqueness, cross-refs, optional mutation check)")
   .option("--against <ref>", "Compare against a git ref to detect active-rule mutations (e.g. origin/main)")
+  .option("--strict-touches", "Treat touches misses as hard errors instead of warnings")
   .option("--json", "Output as JSON")
   .action(validateCommand);
 
@@ -99,5 +101,14 @@ program
     "Run an MCP stdio server exposing the spec corpus to agents (Claude Code, Codex, Cursor, etc.)"
   )
   .action(mcpCommand);
+
+program
+  .command("lint")
+  .description(
+    "Style/quality linter — flags oversized rules, oversized specs, and behavioral rules missing a behavior block"
+  )
+  .option("--strict", "Exit with code 1 if any findings are reported")
+  .option("--json", "Output as JSON")
+  .action(lintCommand);
 
 program.parse();

@@ -13,6 +13,7 @@ import chalk from "chalk";
 interface ValidateOptions {
   against?: string;
   json?: boolean;
+  strictTouches?: boolean;
 }
 
 export async function validateCommand(opts: ValidateOptions = {}) {
@@ -33,7 +34,7 @@ export async function validateCommand(opts: ValidateOptions = {}) {
 
   const duplicates = validateUniqueness(specs);
   const unresolvedRefs = validateCrossRefs(specs);
-  const touchesWarnings = validateTouches(specs, repoRoot);
+  const touchesWarnings = validateTouches(specs, repoRoot, config);
 
   let mutations: MutationError[] = [];
   if (opts.against) {
@@ -49,11 +50,13 @@ export async function validateCommand(opts: ValidateOptions = {}) {
     }
   }
 
+  const touchesAreErrors = opts.strictTouches === true;
   const hardErrors =
     schemaFailures.length +
     duplicates.length +
     unresolvedRefs.length +
-    mutations.length;
+    mutations.length +
+    (touchesAreErrors ? touchesWarnings.length : 0);
 
   if (opts.json) {
     console.log(
@@ -149,8 +152,11 @@ export async function validateCommand(opts: ValidateOptions = {}) {
   }
 
   if (touchesWarnings.length > 0) {
+    const label = touchesAreErrors ? "Touches errors" : "Touches warnings";
+    const colorize = touchesAreErrors ? chalk.red : chalk.yellow;
+    const prefix = touchesAreErrors ? "x" : "!";
     console.log(
-      chalk.yellow(`\n! Touches warnings (${touchesWarnings.length}):\n`)
+      colorize(`\n${prefix} ${label} (${touchesWarnings.length}):\n`)
     );
     for (const w of touchesWarnings) {
       console.log(`  ${w.specFile}:`);
