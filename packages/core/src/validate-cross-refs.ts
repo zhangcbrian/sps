@@ -14,7 +14,8 @@ export interface UnresolvedRefError {
     | "then"
     | "notes"
     | "edge_case"
-    | "superseded_by";
+    | "superseded_by"
+    | "behavior";
 }
 
 /**
@@ -69,6 +70,19 @@ export function validateCrossRefs(specs: SpecFile[]): UnresolvedRefError[] {
       for (const ec of rule.edge_cases || []) {
         scan(ec.case, spec, i, rule, "edge_case");
         scan(ec.decision, spec, i, rule, "edge_case");
+      }
+
+      // Behavior block strings can carry citations too — invariants
+      // commonly reference companion rules ("see REQ-XYZ-01") and
+      // errors[*].when often quotes domain context that may cite an
+      // upstream rule. Skip without behavior; otherwise scan.
+      if (rule.behavior) {
+        for (const inv of rule.behavior.invariants ?? []) {
+          scan(inv, spec, i, rule, "behavior");
+        }
+        for (const err of rule.behavior.errors ?? []) {
+          scan(err.when, spec, i, rule, "behavior");
+        }
       }
 
       // Lifecycle link: a rule's superseded_by must resolve to a real

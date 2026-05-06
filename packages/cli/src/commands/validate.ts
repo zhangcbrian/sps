@@ -41,11 +41,21 @@ export async function validateCommand(opts: ValidateOptions = {}) {
     try {
       mutations = await validateMutations(specs, repoRoot, opts.against);
     } catch (err) {
-      console.error(
-        chalk.red(
-          `Failed to load specs at ref "${opts.against}": ${(err as Error).message}`
-        )
-      );
+      const message = (err as Error).message;
+      if (opts.json) {
+        console.log(
+          JSON.stringify({
+            ok: false,
+            error: `Failed to load specs at ref "${opts.against}": ${message}`,
+          })
+        );
+      } else {
+        console.error(
+          chalk.red(
+            `Failed to load specs at ref "${opts.against}": ${message}`
+          )
+        );
+      }
       process.exit(1);
     }
   }

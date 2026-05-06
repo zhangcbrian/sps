@@ -140,6 +140,26 @@ describe("validateCrossRefs", () => {
     expect(errors.filter((e) => e.field === "superseded_by")).toEqual([]);
   });
 
+  it("scans behavior block invariants and errors[].when for citations", () => {
+    const specs = [
+      makeSpec("src/a/a.sps.yaml", [
+        makeRule("REQ-A-X-01", {
+          description: "no refs here",
+        }),
+      ]),
+    ];
+    specs[0].rules[0].behavior = {
+      surface: "trpc.x.y",
+      invariants: ["builds on REQ-GHOST-77"],
+      errors: [{ code: "X", when: "as described in REQ-GHOST-78" }],
+    };
+    const errors = validateCrossRefs(specs);
+    const refs = errors.map((e) => e.unresolvedRef).sort();
+    expect(refs).toContain("REQ-GHOST-77");
+    expect(refs).toContain("REQ-GHOST-78");
+    expect(errors.every((e) => e.field === "behavior")).toBe(true);
+  });
+
   it("does not match REQ- without trailing digits", () => {
     const specs = [
       makeSpec("src/a/a.sps.yaml", [
