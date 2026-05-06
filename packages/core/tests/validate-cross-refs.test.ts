@@ -115,6 +115,19 @@ describe("validateCrossRefs", () => {
     expect(errors[0].unresolvedRef).toBe("REQ-GHOST-99");
   });
 
+  it("flags a superseded_by link that points to itself", () => {
+    const specs = [
+      makeSpec("src/a/a.sps.yaml", [
+        makeRule("REQ-A-X-01", { status: "superseded" }),
+      ]),
+    ];
+    specs[0].rules[0].superseded_by = "REQ-A-X-01";
+    const errors = validateCrossRefs(specs);
+    expect(errors).toHaveLength(1);
+    expect(errors[0].field).toBe("superseded_by");
+    expect(errors[0].unresolvedRef).toBe("REQ-A-X-01");
+  });
+
   it("does not flag a superseded_by link that resolves", () => {
     const specs = [
       makeSpec("src/a/a.sps.yaml", [

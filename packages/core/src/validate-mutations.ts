@@ -1,6 +1,7 @@
 import { simpleGit, type SimpleGit } from "simple-git";
 import { parse } from "yaml";
-import type { SpecFile, SpecRule } from "./types.js";
+import type { SpecRule } from "./types.js";
+import type { SpecFile } from "./types.js";
 
 export interface MutationError {
   specFile: string;
@@ -28,6 +29,11 @@ const ALLOWED_TRANSITIONS = new Set<string>([
 
 const TRACKED_TEXT_FIELDS = ["title", "given", "when", "then"] as const;
 
+interface BeforeRule {
+  rule: SpecRule;
+  filePath: string;
+}
+
 /**
  * Detects edits to active rules' load-bearing fields (title, given, when,
  * then, behavior) relative to a git ref, plus silent deletions of active
@@ -38,8 +44,11 @@ const TRACKED_TEXT_FIELDS = ["title", "given", "when", "then"] as const;
  * rule. Silent edits or deletions destroy spec history and cause
  * invisible drift.
  *
- * New rules and rules whose status was not `active` at the ref are
- * skipped (other than the transition check).
+ * The ref-side rule map is built globally across every `.sps.yaml` file
+ * that existed at the ref. This makes the check robust to cross-file
+ * rule moves: a rule that moved from spec A to spec B and was edited in
+ * the same change is compared against its old ref version in spec A,
+ * not against an empty per-file lookup in spec B.
  */
 export async function validateMutations(
   currentSpecs: SpecFile[],
@@ -49,9 +58,11 @@ export async function validateMutations(
   const git = simpleGit(repoRoot);
   const errors: MutationError[] = [];
 
-  // Collect every rule ID that exists in the working tree, across all
-  // specs. A rule that "moved" from one spec file to another should not
-  // be reported as a deletion — it just lives elsewhere now.
+  const refMap = await buildRefRuleMap(git, againstRef);
+
+  // Track rule IDs that exist in the current working tree, anywhere.
+  // A rule that "moved" between spec files is still present, so its ID
+  // is in this set even if it's gone from the ref-side path.
   const allCurrentIds = new Set<string>();
   for (const spec of currentSpecs) {
     for (const rule of spec.rules) {
@@ -59,18 +70,13 @@ export async function validateMutations(
     }
   }
 
-  const currentFilePaths = new Set(currentSpecs.map((s) => s.filePath));
-
   for (const current of currentSpecs) {
-    const beforeMap = await loadBeforeMap(git, againstRef, current.filePath);
-    if (!beforeMap) continue;
-
     for (const currentRule of current.rules) {
       if (!currentRule.id) continue;
-      const beforeRule = beforeMap.get(currentRule.id);
-      if (!beforeRule) continue;
+      const before = refMap.get(currentRule.id);
+      if (!before) continue;
 
-      const fromStatus = String(beforeRule.status ?? "");
+      const fromStatus = String(before.rule.status ?? "");
       const toStatus = String(currentRule.status ?? "");
       if (fromStatus !== toStatus) {
         const key = `${fromStatus}→${toStatus}`;
@@ -85,10 +91,10 @@ export async function validateMutations(
         }
       }
 
-      if (beforeRule.status !== "active") continue;
+      if (before.rule.status !== "active") continue;
 
       for (const field of TRACKED_TEXT_FIELDS) {
-        const beforeVal = String(beforeRule[field] ?? "");
+        const beforeVal = String(before.rule[field] ?? "");
         const afterVal = String(currentRule[field] ?? "");
         if (normalize(beforeVal) !== normalize(afterVal)) {
           errors.push({
@@ -101,7 +107,7 @@ export async function validateMutations(
         }
       }
 
-      const beforeBehavior = canonical(beforeRule.behavior);
+      const beforeBehavior = canonical(before.rule.behavior);
       const afterBehavior = canonical(currentRule.behavior);
       if (beforeBehavior !== afterBehavior) {
         errors.push({
@@ -113,84 +119,63 @@ export async function validateMutations(
         });
       }
     }
-
-    // Active rules that lived in this spec at the ref but no longer
-    // exist anywhere in the working tree — silent deletions.
-    for (const [id, beforeRule] of beforeMap) {
-      if (allCurrentIds.has(id)) continue;
-      if (String(beforeRule.status ?? "") !== "active") continue;
-      errors.push({
-        specFile: current.filePath,
-        ruleId: id,
-        field: "transition",
-        before: "active",
-        after: "(removed)",
-      });
-    }
   }
 
-  // Spec files that existed at the ref but no longer exist at HEAD —
-  // each active rule inside them is a silent deletion (unless the rule
-  // moved to another spec file in the working tree).
-  let refFiles: string[] = [];
-  try {
-    const out = await git.raw([
-      "ls-tree",
-      "-r",
-      againstRef,
-      "--name-only",
-    ]);
-    refFiles = out
-      .split("\n")
-      .map((s) => s.trim())
-      .filter((s) => s.endsWith(".sps.yaml"));
-  } catch {
-    // ignore if ref isn't navigable
-  }
-  for (const filePath of refFiles) {
-    if (currentFilePaths.has(filePath)) continue;
-    const beforeMap = await loadBeforeMap(git, againstRef, filePath);
-    if (!beforeMap) continue;
-    for (const [id, beforeRule] of beforeMap) {
-      if (allCurrentIds.has(id)) continue;
-      if (String(beforeRule.status ?? "") !== "active") continue;
-      errors.push({
-        specFile: filePath,
-        ruleId: id,
-        field: "transition",
-        before: "active",
-        after: "(removed)",
-      });
-    }
+  // Active rules that lived somewhere at the ref but no longer exist
+  // anywhere in the working tree — silent deletions.
+  for (const [id, before] of refMap) {
+    if (allCurrentIds.has(id)) continue;
+    if (String(before.rule.status ?? "") !== "active") continue;
+    errors.push({
+      specFile: before.filePath,
+      ruleId: id,
+      field: "transition",
+      before: "active",
+      after: "(removed)",
+    });
   }
 
   return errors;
 }
 
-async function loadBeforeMap(
+async function buildRefRuleMap(
   git: SimpleGit,
-  ref: string,
-  filePath: string
-): Promise<Map<string, SpecRule> | null> {
-  let content: string;
+  ref: string
+): Promise<Map<string, BeforeRule>> {
+  const map = new Map<string, BeforeRule>();
+  let files: string[] = [];
   try {
-    content = await git.show([`${ref}:${filePath}`]);
+    const out = await git.raw(["ls-tree", "-r", ref, "--name-only"]);
+    files = out
+      .split("\n")
+      .map((s) => s.trim())
+      .filter((s) => s.endsWith(".sps.yaml"));
   } catch {
-    return null;
+    return map;
   }
 
-  let parsed: { rules?: unknown };
-  try {
-    parsed = parse(content) ?? {};
-  } catch {
-    return null;
-  }
-  if (!parsed || !Array.isArray(parsed.rules)) return null;
-
-  const map = new Map<string, SpecRule>();
-  for (const rule of parsed.rules as SpecRule[]) {
-    if (rule && typeof rule === "object" && rule.id) {
-      map.set(rule.id, rule);
+  for (const filePath of files) {
+    let content: string;
+    try {
+      content = await git.show([`${ref}:${filePath}`]);
+    } catch {
+      continue;
+    }
+    let parsed: { rules?: unknown };
+    try {
+      parsed = parse(content) ?? {};
+    } catch {
+      continue;
+    }
+    if (!parsed || !Array.isArray(parsed.rules)) continue;
+    for (const rule of parsed.rules as SpecRule[]) {
+      if (rule && typeof rule === "object" && rule.id) {
+        // First occurrence wins — duplicate IDs at the ref are a
+        // pre-existing schema problem outside this validator's remit.
+        if (!map.has(rule.id)) {
+          map.set(rule.id, { rule, filePath });
+        }
+      }
     }
   }
   return map;

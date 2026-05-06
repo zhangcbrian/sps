@@ -78,13 +78,47 @@ export function validateSpec(
             `${prefix}.behavior.surface: required string (function path, route, or component identifier).`
           );
         }
-        for (const arrayField of ["invariants"] as const) {
-          if (arrayField in b && !Array.isArray(b[arrayField])) {
+
+        if ("invariants" in b) {
+          if (!Array.isArray(b.invariants)) {
             errors.push(
-              `${prefix}.behavior.${arrayField}: must be an array of strings.`
+              `${prefix}.behavior.invariants: must be an array of strings.`
             );
+          } else {
+            for (let j = 0; j < b.invariants.length; j++) {
+              if (typeof b.invariants[j] !== "string") {
+                errors.push(
+                  `${prefix}.behavior.invariants[${j}]: must be a string.`
+                );
+              }
+            }
           }
         }
+
+        for (const ioField of ["inputs", "outputs"] as const) {
+          if (!(ioField in b)) continue;
+          const value = b[ioField];
+          if (
+            typeof value !== "object" ||
+            value === null ||
+            Array.isArray(value)
+          ) {
+            errors.push(
+              `${prefix}.behavior.${ioField}: must be an object mapping field names to type descriptions.`
+            );
+            continue;
+          }
+          for (const [k, v] of Object.entries(
+            value as Record<string, unknown>
+          )) {
+            if (typeof v !== "string") {
+              errors.push(
+                `${prefix}.behavior.${ioField}.${k}: must be a string type description.`
+              );
+            }
+          }
+        }
+
         if ("errors" in b) {
           if (!Array.isArray(b.errors)) {
             errors.push(`${prefix}.behavior.errors: must be an array.`);

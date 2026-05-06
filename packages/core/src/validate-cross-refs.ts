@@ -72,23 +72,26 @@ export function validateCrossRefs(specs: SpecFile[]): UnresolvedRefError[] {
       }
 
       // Lifecycle link: a rule's superseded_by must resolve to a real
-      // rule. Schema validation only checks that the field is present
-      // (when status is "superseded") — it does not check that the
-      // target exists. A typo here silently breaks the supersedence
-      // chain.
+      // rule that is not the rule itself. Schema validation only checks
+      // that the field is present (when status is "superseded") — it
+      // does not check that the target exists or that it points
+      // somewhere meaningful. A typo here silently breaks the
+      // supersedence chain; a self-reference creates a cycle that looks
+      // valid to every other tool.
       if (
         typeof rule.superseded_by === "string" &&
-        rule.superseded_by.length > 0 &&
-        rule.superseded_by !== rule.id &&
-        !knownIds.has(rule.superseded_by)
+        rule.superseded_by.length > 0
       ) {
-        errors.push({
-          specFile: spec.filePath,
-          ruleIndex: i,
-          ruleId: rule.id,
-          unresolvedRef: rule.superseded_by,
-          field: "superseded_by",
-        });
+        const isSelf = rule.superseded_by === rule.id;
+        if (isSelf || !knownIds.has(rule.superseded_by)) {
+          errors.push({
+            specFile: spec.filePath,
+            ruleIndex: i,
+            ruleId: rule.id,
+            unresolvedRef: rule.superseded_by,
+            field: "superseded_by",
+          });
+        }
       }
     }
   }

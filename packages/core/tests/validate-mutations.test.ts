@@ -216,6 +216,56 @@ rules:
     expect(errors.filter((e) => e.field === "transition")).toEqual([]);
   });
 
+  it("flags an active rule that was moved AND edited (cross-file mutation)", async () => {
+    const oldPath = "src/checkout/checkout.sps.yaml";
+    const oldSpec = `spec: checkout/checkout
+title: Checkout
+description: x
+category: business
+touches: []
+rules:
+  - id: REQ-CHK-FLOW-01
+    title: Apply discount
+    status: active
+    category: business
+    description: x
+    given: g
+    when: w
+    then: Original outcome.
+    examples: []
+    edge_cases: []
+    tests: []
+`;
+    writeFileSync(join(dir, oldPath), oldSpec);
+    await git.add(oldPath);
+    await git.commit("initial");
+
+    // Move rule to a new file AND edit `then` in one PR.
+    const newPath = "src/checkout/flow.sps.yaml";
+    mkdirSync(join(dir, "src/checkout"), { recursive: true });
+    writeFileSync(
+      join(dir, newPath),
+      oldSpec
+        .replace("checkout/checkout", "checkout/flow")
+        .replace("Original outcome.", "Different outcome now.")
+    );
+    const { unlinkSync } = await import("fs");
+    unlinkSync(join(dir, oldPath));
+
+    const specs = loadSpecs(dir);
+    const errors = await validateMutations(specs, dir, "HEAD");
+    // The mutation must be caught even though the rule moved files.
+    expect(
+      errors.some(
+        (e) =>
+          e.ruleId === "REQ-CHK-FLOW-01" &&
+          e.field === "then" &&
+          e.before.includes("Original") &&
+          e.after.includes("Different")
+      )
+    ).toBe(true);
+  });
+
   it("flags nested behavior changes (inputs/outputs/errors)", async () => {
     const withBehavior = (inputType: string) => `spec: checkout/checkout
 title: Checkout

@@ -86,6 +86,49 @@ describe("validateSpec — behavior block", () => {
     expect(errors.some((e) => e.includes("behavior.errors[0]"))).toBe(true);
   });
 
+  it("rejects non-string entries in behavior.invariants", () => {
+    const errors = validateSpec(
+      wrap({
+        ...baseRule,
+        behavior: {
+          surface: "x.y",
+          invariants: ["valid invariant", 123, "another"],
+        },
+      }),
+      SCHEMA
+    );
+    expect(
+      errors.some((e) => e.includes("behavior.invariants[1]"))
+    ).toBe(true);
+  });
+
+  it("rejects non-string values in behavior.inputs", () => {
+    const errors = validateSpec(
+      wrap({
+        ...baseRule,
+        behavior: {
+          surface: "x.y",
+          inputs: { limit: 42, name: "string" },
+        },
+      }),
+      SCHEMA
+    );
+    expect(
+      errors.some((e) => e.includes("behavior.inputs.limit"))
+    ).toBe(true);
+  });
+
+  it("rejects an array in behavior.outputs", () => {
+    const errors = validateSpec(
+      wrap({
+        ...baseRule,
+        behavior: { surface: "x.y", outputs: ["bad"] },
+      }),
+      SCHEMA
+    );
+    expect(errors.some((e) => e.includes("behavior.outputs"))).toBe(true);
+  });
+
   it("rejects a non-object behavior", () => {
     const errors = validateSpec(
       wrap({ ...baseRule, behavior: "not an object" as unknown }),
