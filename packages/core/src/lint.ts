@@ -1,3 +1,4 @@
+import { readFileSync } from "fs";
 import type { SpecFile } from "./types.js";
 
 export interface LintFinding {
@@ -45,6 +46,20 @@ const DEFAULT_BEHAVIORAL_KEYWORDS = [
 
 const DEFAULT_FORBIDDEN_PATTERNS = ["#\\d+", "TKT-\\d+", "Phase \\d+\\b"];
 
+function getLineCount(
+  spec: SpecFile,
+  override?: Map<string, number>
+): number {
+  if (override?.has(spec.filePath)) {
+    return override.get(spec.filePath)!;
+  }
+  try {
+    return readFileSync(spec.filePath, "utf8").split("\n").length;
+  } catch {
+    return 0;
+  }
+}
+
 export function lintSpecs(
   specs: SpecFile[],
   options: LintOptions = {}
@@ -57,10 +72,25 @@ export function lintSpecs(
   const forbiddenPatterns = (
     options.forbiddenPatterns ?? DEFAULT_FORBIDDEN_PATTERNS
   ).map((p) => new RegExp(p));
+  const maxLines = options.maxSpecFileLines ?? 800;
 
   const findings: LintFinding[] = [];
 
   for (const spec of specs) {
+    if (maxLines > 0) {
+      const lineCount = getLineCount(spec, options.fileLineCounts);
+      if (lineCount > maxLines) {
+        findings.push({
+          specFile: spec.filePath,
+          ruleId: null,
+          rule: "spec_file_too_large",
+          severity: "warn",
+          category: "spec_file_too_large",
+          message: `${lineCount} lines in this spec — split when contracts diverge (limit: ${maxLines}).`,
+        });
+      }
+    }
+
     if (spec.rules.length > maxRules) {
       findings.push({
         specFile: spec.filePath,

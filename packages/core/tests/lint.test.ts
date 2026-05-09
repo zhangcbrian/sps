@@ -137,4 +137,46 @@ describe("lintSpecs", () => {
       findings.filter((f) => f.category === "forbidden_pattern_in_description")
     ).toEqual([]);
   });
+
+  it("flags spec files whose on-disk line count exceeds the threshold", () => {
+    const findings = lintSpecs(
+      [wrap([baseRule], "src/big.sps.yaml")],
+      { fileLineCounts: new Map([["src/big.sps.yaml", 801]]) }
+    );
+    expect(
+      findings.filter((f) => f.category === "spec_file_too_large")
+    ).toHaveLength(1);
+  });
+
+  it("does not flag at or below the file-line threshold", () => {
+    const findings = lintSpecs(
+      [wrap([baseRule], "src/ok.sps.yaml")],
+      { fileLineCounts: new Map([["src/ok.sps.yaml", 800]]) }
+    );
+    expect(
+      findings.filter((f) => f.category === "spec_file_too_large")
+    ).toEqual([]);
+  });
+
+  it("respects maxSpecFileLines: 0 to disable the file-size check", () => {
+    const findings = lintSpecs(
+      [wrap([baseRule], "src/huge.sps.yaml")],
+      {
+        fileLineCounts: new Map([["src/huge.sps.yaml", 5000]]),
+        maxSpecFileLines: 0,
+      }
+    );
+    expect(
+      findings.filter((f) => f.category === "spec_file_too_large")
+    ).toEqual([]);
+  });
+
+  it("skips file-size check silently when the file cannot be read", () => {
+    const findings = lintSpecs([
+      wrap([baseRule], "src/does-not-exist.sps.yaml"),
+    ]);
+    expect(
+      findings.filter((f) => f.category === "spec_file_too_large")
+    ).toEqual([]);
+  });
 });
