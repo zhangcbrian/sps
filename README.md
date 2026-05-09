@@ -1,4 +1,4 @@
-# sls
+# sps
 
 Turn plain-English requirements into structured, traceable specs that live next to your code.
 
@@ -9,13 +9,15 @@ Turn plain-English requirements into structured, traceable specs that live next 
 src/checkout/coupons/coupons.sps.yaml   (structured YAML, lineage IDs, given/when/then)
 ```
 
+> Previously distributed as `@sls/*` and known as SpecFlow.
+
 ---
 
 ## Why
 
 Requirements get lost. A PM describes a feature in Slack. An engineer interprets it differently. Six months later, nobody knows why a rule exists.
 
-sls fixes this: one `.sps.yaml` file per feature area, co-located with the code, readable by both business users and engineers, tracked in git with full traceability.
+sps fixes this: one `.sps.yaml` file per feature area, co-located with the code, readable by both business users and engineers, tracked in git with full traceability.
 
 ## Get Started
 
@@ -24,7 +26,7 @@ sps init                                          # creates .sps/config.yaml + e
 sps submit "users need discount codes at checkout" # LLM interprets → dedup → commit → PR
 ```
 
-That's it. sls creates a `.sps.yaml` file next to your code, assigns lineage IDs, and opens a PR.
+That's it. sps creates a `.sps.yaml` file next to your code, assigns lineage IDs, and opens a PR.
 
 ## What a Spec Looks Like
 
@@ -128,7 +130,7 @@ sps agent                                          # writes CLAUDE.md
 sps agent -o .github/copilot-instructions.md       # or any agent format
 ```
 
-Or run sls as an MCP server and let the agent query specs on demand:
+Or run sps as an MCP server and let the agent query specs on demand:
 
 ```bash
 sps mcp
@@ -172,9 +174,9 @@ src/
 
 | Package | What |
 |---------|------|
-| `@sls/core` | Engine: interpret, deduplicate, validate, scan, coverage, agent |
-| `@sls/cli` | `sps` (alias `sls`) binary — all commands above |
-| `@sls/portal` | Next.js web UI — submit, browse, review specs as readable cards |
+| `@sps/core` | Engine: interpret, deduplicate, validate, scan, coverage, agent |
+| `@sps/cli` | `sps` binary — all commands above |
+| `@sps/portal` | Next.js web UI — submit, browse, review specs as readable cards |
 
 ## License
 

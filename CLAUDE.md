@@ -1,4 +1,4 @@
-# sls — Development Guide
+# sps — Development Guide
 
 ## Project Structure
 
@@ -6,9 +6,9 @@ pnpm monorepo with three packages:
 
 ```
 packages/
-  core/     @sls/core    — shared library (TypeScript)
-  cli/      @sls/cli     — terminal interface (Commander); ships `sps` + `sls` bins
-  portal/   @sls/portal  — web UI (Next.js 15, React 19)
+  core/     @sps/core    — shared library (TypeScript)
+  cli/      @sps/cli     — terminal interface (Commander); ships the `sps` bin
+  portal/   @sps/portal  — web UI (Next.js 15, React 19)
 ```
 
 ## Commands
