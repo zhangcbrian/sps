@@ -17,7 +17,7 @@ export interface LintFinding {
 }
 
 export interface LintOptions {
-  /** Maximum word count in a rule's description before it's flagged. Default 100 (in upcoming change). */
+  /** Maximum word count in a rule's description before it's flagged. Default 100. */
   maxDescriptionWords?: number;
   /** Maximum rules in a single spec file before it's flagged for splitting. Default 30. */
   maxRulesPerSpec?: number;
@@ -67,7 +67,7 @@ export function lintSpecs(
   specs: SpecFile[],
   options: LintOptions = {}
 ): LintFinding[] {
-  const maxWords = options.maxDescriptionWords ?? 200;
+  const maxWords = options.maxDescriptionWords ?? 100;
   const maxRules = options.maxRulesPerSpec ?? 30;
   const keywords = (
     options.behavioralKeywords ?? DEFAULT_BEHAVIORAL_KEYWORDS

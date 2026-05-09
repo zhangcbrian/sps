@@ -207,4 +207,20 @@ describe("lintSpecs", () => {
     expect(matches).toHaveLength(1);
     expect(matches[0].message).toContain("801 lines");
   });
+
+  it("flags descriptions over 100 words by default", () => {
+    const description = "word ".repeat(101);
+    const findings = lintSpecs([
+      wrap([{ ...baseRule, description }]),
+    ]);
+    expect(findings.filter((f) => f.category === "rule_too_long")).toHaveLength(1);
+  });
+
+  it("does not flag descriptions of exactly 100 words by default", () => {
+    const description = "word ".repeat(100).trim();
+    const findings = lintSpecs([
+      wrap([{ ...baseRule, description }]),
+    ]);
+    expect(findings.filter((f) => f.category === "rule_too_long")).toEqual([]);
+  });
 });
