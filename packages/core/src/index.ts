@@ -15,6 +15,7 @@ export type {
   LlmConfig,
   GitConfig,
   DedupConfig,
+  LintConfig,
   SpecFile,
   SpecRule,
   BehaviorBlock,

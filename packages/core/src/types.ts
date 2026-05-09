@@ -63,6 +63,19 @@ export interface ValidateConfig {
   touches_roots?: string[];
 }
 
+export interface LintConfig {
+  /** Maximum word count in a rule's description before it's flagged. Default 100 (v0.3, was 200 in v0.2). */
+  maxDescriptionWords?: number;
+  /** Maximum rules in a single spec file before it's flagged for splitting. Default 30. */
+  maxRulesPerSpec?: number;
+  /** Maximum on-disk line count for a spec file before it's flagged. Default 800. Set 0 to disable. */
+  maxSpecFileLines?: number;
+  /** Regex strings checked against rule descriptions. Default flags ticket/PR/phase references. Set [] to disable. */
+  forbiddenPatterns?: string[];
+  /** Behavioral surface keywords that should usually carry a behavior block. */
+  behavioralKeywords?: string[];
+}
+
 export interface SpsConfig {
   version: number;
   schema: SchemaConfig;
@@ -73,6 +86,7 @@ export interface SpsConfig {
   dedup: DedupConfig;
   prompts?: PromptsConfig;
   validate?: ValidateConfig;
+  lint?: LintConfig;
 }
 
 // --- Spec ---
