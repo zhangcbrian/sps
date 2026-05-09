@@ -9,7 +9,7 @@ import {
   validateUniqueness,
   validateCrossRefs,
   lintSpecs,
-} from "@sls/core";
+} from "@sps/core";
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "fs";
 import { join } from "path";
 import { stringify } from "yaml";
@@ -33,7 +33,7 @@ function evaluateAdoption(repoRoot: string): AdoptionStatus {
     principles_present: existsSync(join(repoRoot, ".sps/principles.yaml")),
     manifest_present: existsSync(join(repoRoot, ".sps/manifest.yaml")),
     github_workflow_present: existsSync(
-      join(repoRoot, ".github/workflows/sls.yml")
+      join(repoRoot, ".github/workflows/sps.yml")
     ),
     husky_hook_present: huskyHasGate,
   };
@@ -216,7 +216,7 @@ export async function doctorCommand(options: DoctorOptions = {}) {
   );
   printAdoption("Manifest (.sps/manifest.yaml)", adoption.manifest_present);
   printAdoption(
-    "GitHub workflow (.github/workflows/sls.yml)",
+    "GitHub workflow (.github/workflows/sps.yml)",
     adoption.github_workflow_present,
     "Run `sps init --ci=github` to scaffold."
   );

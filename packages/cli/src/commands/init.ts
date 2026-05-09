@@ -1,14 +1,14 @@
 import { existsSync, mkdirSync, writeFileSync, chmodSync, readFileSync } from "fs";
 import { join } from "path";
 import { stringify } from "yaml";
-import { DEFAULT_CONFIG } from "@sls/core";
+import { DEFAULT_CONFIG } from "@sps/core";
 import chalk from "chalk";
 
 interface InitOptions {
   ci?: "github" | "husky";
 }
 
-const GITHUB_WORKFLOW = `name: sls
+const GITHUB_WORKFLOW = `name: sps
 
 on:
   pull_request:
@@ -25,8 +25,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
-      - name: Install sls
-        run: npm i -g @sls/cli
+      - name: Install sps
+        run: npm i -g @sps/cli
       - name: Validate specs
         run: sps validate --strict-touches --against=origin/\${{ github.base_ref || 'main' }}
       - name: Coverage
@@ -36,7 +36,7 @@ jobs:
 `;
 
 const HUSKY_PRE_PUSH = `#!/usr/bin/env sh
-# sls pre-push: cheap local gate before CI sees the branch.
+# sps pre-push: cheap local gate before CI sees the branch.
 sps validate --strict-touches || exit 1
 `;
 
@@ -114,24 +114,24 @@ rules:
   console.log(chalk.green("*"), "Created .sps/example.sps.yaml");
 
   console.log(
-    `\n${chalk.bold("sls initialized.")} Copy .sps/example.sps.yaml next to your code to start writing specs.\nRun ${chalk.dim("sps scan")} to build the manifest, ${chalk.dim("sps init --ci=github")} for CI, or ${chalk.dim("sps init --ci=husky")} for a pre-push hook.\n`
+    `\n${chalk.bold("sps initialized.")} Copy .sps/example.sps.yaml next to your code to start writing specs.\nRun ${chalk.dim("sps scan")} to build the manifest, ${chalk.dim("sps init --ci=github")} for CI, or ${chalk.dim("sps init --ci=husky")} for a pre-push hook.\n`
   );
 }
 
 function writeGithubWorkflow(repoRoot: string) {
   const dir = join(repoRoot, ".github", "workflows");
-  const target = join(dir, "sls.yml");
+  const target = join(dir, "sps.yml");
   if (existsSync(target)) {
     console.log(
       chalk.yellow(
-        `! .github/workflows/sls.yml already exists. Edit manually if you want to customize. Skipping.`
+        `! .github/workflows/sps.yml already exists. Edit manually if you want to customize. Skipping.`
       )
     );
     return;
   }
   mkdirSync(dir, { recursive: true });
   writeFileSync(target, GITHUB_WORKFLOW, "utf-8");
-  console.log(chalk.green("*"), "Created .github/workflows/sls.yml");
+  console.log(chalk.green("*"), "Created .github/workflows/sps.yml");
   console.log(
     chalk.dim(
       "  Runs sps validate --strict-touches --against=origin/main, coverage --strict, and lint on every PR."
@@ -150,7 +150,7 @@ function writeHuskyHook(repoRoot: string) {
       console.log(chalk.yellow("! .husky/pre-push already mentions sps validate. Skipping."));
       return;
     }
-    content = existing.replace(/\n*$/, "\n") + "\n# sls gate\nsps validate --strict-touches || exit 1\n";
+    content = existing.replace(/\n*$/, "\n") + "\n# sps gate\nsps validate --strict-touches || exit 1\n";
   }
   writeFileSync(target, content, "utf-8");
   try {

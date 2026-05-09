@@ -64,7 +64,7 @@ describe("init command", () => {
     const { initCommand } = await import("../src/commands/init.js");
     await initCommand({ ci: "github" });
 
-    const target = join(dir, ".github/workflows/sls.yml");
+    const target = join(dir, ".github/workflows/sps.yml");
     expect(existsSync(target)).toBe(true);
     const content = readFileSync(target, "utf-8");
     expect(content).toContain("sps validate --strict-touches");

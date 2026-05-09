@@ -1,4 +1,4 @@
-import { loadSpecs, analyzeCoverage } from "@sls/core";
+import { loadSpecs, analyzeCoverage } from "@sps/core";
 import chalk from "chalk";
 
 interface CoverageOptions {
