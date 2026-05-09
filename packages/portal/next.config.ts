@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  transpilePackages: ["@sls/core"],
+  transpilePackages: ["@sps/core"],
 };
 
 export default nextConfig;

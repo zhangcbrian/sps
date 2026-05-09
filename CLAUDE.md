@@ -1,4 +1,4 @@
-# sls — Development Guide
+# sps — Development Guide
 
 ## Project Structure
 
@@ -6,9 +6,9 @@ pnpm monorepo with three packages:
 
 ```
 packages/
-  core/     @sls/core    — shared library (TypeScript)
-  cli/      @sls/cli     — terminal interface (Commander); ships `sps` + `sls` bins
-  portal/   @sls/portal  — web UI (Next.js 15, React 19)
+  core/     @sps/core    — shared library (TypeScript)
+  cli/      @sps/cli     — terminal interface (Commander); ships the `sps` bin
+  portal/   @sps/portal  — web UI (Next.js 15, React 19)
 ```
 
 ## Commands
@@ -70,7 +70,7 @@ The core library (`packages/core/src/`) contains these modules:
 | `sps coverage` | Analyze test coverage of spec rules |
 | `sps coverage --strict` | CI gate: fail if any rules lack tests |
 | `sps mcp` | Run MCP server for agent integration (v0.2) |
-| `sps lint` | Style/quality check (v0.2) |
+| `sps lint` | Style/quality check (v0.2). v0.3: adds `forbidden_pattern_in_description` (default catches `#N`, `TKT-N`, `Phase N`) and `spec_file_too_large` (default 800 lines); `maxDescriptionWords` default tightened 200 → 100. Override defaults via `.sps/config.yaml` `lint:` block. |
 | `sps doctor` | Combined health check: validate + coverage + scan + adoption checklist |
 | `--json` | Every command accepts `--json` for machine-readable output |
 

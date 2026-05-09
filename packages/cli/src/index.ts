@@ -18,14 +18,14 @@ const program = new Command();
 program
   .name("sps")
   .description(
-    "sls — turn natural language requirements into structured, traceable specs in git"
+    "sps — turn natural language requirements into structured, traceable specs in git"
   )
-  .version("0.2.0");
+  .version("0.3.0");
 
 program
   .command("init")
   .description(
-    "Initialize sls in the current repo. With --ci=github, writes .github/workflows/sls.yml. With --ci=husky, writes .husky/pre-push."
+    "Initialize sps in the current repo. With --ci=github, writes .github/workflows/sps.yml. With --ci=husky, writes .husky/pre-push."
   )
   .option("--ci <target>", "Scaffold CI/hook integration: github | husky")
   .action(initCommand);

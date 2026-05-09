@@ -49,7 +49,7 @@ export interface PromptsConfig {
    * Optional repo-specific prose appended to the interpret system prompt.
    * Use this to inject domain conventions ("money is always cents",
    * "multi-tenant procedures default to org-scoped", etc.) without
-   * forking sls.
+   * forking sps.
    */
   interpret_postlude?: string;
 }
@@ -63,6 +63,19 @@ export interface ValidateConfig {
   touches_roots?: string[];
 }
 
+export interface LintConfig {
+  /** Maximum word count in a rule's description before it's flagged. Default 100. */
+  max_description_words?: number;
+  /** Maximum rules in a single spec file before it's flagged for splitting. Default 30. */
+  max_rules_per_spec?: number;
+  /** Maximum on-disk line count for a spec file before it's flagged. Default 800. Set 0 to disable. */
+  max_spec_file_lines?: number;
+  /** Regex strings checked against rule descriptions. Default flags ticket/PR/phase references. Set [] to disable. */
+  forbidden_patterns?: string[];
+  /** Behavioral surface keywords that should usually carry a behavior block. */
+  behavioral_keywords?: string[];
+}
+
 export interface SpsConfig {
   version: number;
   schema: SchemaConfig;
@@ -73,6 +86,7 @@ export interface SpsConfig {
   dedup: DedupConfig;
   prompts?: PromptsConfig;
   validate?: ValidateConfig;
+  lint?: LintConfig;
 }
 
 // --- Spec ---

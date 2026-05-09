@@ -1,4 +1,4 @@
-import { loadSpecs, diffSpecs } from "@sls/core";
+import { loadSpecs, diffSpecs } from "@sps/core";
 import chalk from "chalk";
 
 interface DiffOptions {

@@ -1,7 +1,7 @@
 {
-  "name": "@sls/cli",
-  "version": "0.2.0",
-  "description": "sls CLI — sps binary for managing structured specs",
+  "name": "@sps/cli",
+  "version": "0.3.0",
+  "description": "sps CLI — sps binary for managing structured specs",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -10,7 +10,6 @@
   },
   "type": "module",
   "bin": {
-    "sls": "dist/index.js",
     "sps": "dist/index.js"
   },
   "files": [
@@ -27,7 +26,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
-    "@sls/core": "workspace:*",
+    "@sps/core": "workspace:*",
     "chalk": "^5.4.0",
     "commander": "^13.0.0",
     "yaml": "^2.8.3",

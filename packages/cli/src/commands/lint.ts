@@ -1,15 +1,38 @@
-import { loadSpecs, lintSpecs } from "@sls/core";
+import { loadConfig, loadSpecs, lintSpecs } from "@sps/core";
+import type { LintConfig, LintOptions } from "@sps/core";
 import chalk from "chalk";
 
-interface LintOptions {
+interface CliLintOptions {
   json?: boolean;
   strict?: boolean;
 }
 
-export async function lintCommand(opts: LintOptions = {}) {
+function lintConfigToOptions(config: LintConfig | undefined): LintOptions {
+  if (!config) return {};
+  const options: LintOptions = {};
+  if (config.max_description_words !== undefined) {
+    options.maxDescriptionWords = config.max_description_words;
+  }
+  if (config.max_rules_per_spec !== undefined) {
+    options.maxRulesPerSpec = config.max_rules_per_spec;
+  }
+  if (config.max_spec_file_lines !== undefined) {
+    options.maxSpecFileLines = config.max_spec_file_lines;
+  }
+  if (config.forbidden_patterns !== undefined) {
+    options.forbiddenPatterns = config.forbidden_patterns;
+  }
+  if (config.behavioral_keywords !== undefined) {
+    options.behavioralKeywords = config.behavioral_keywords;
+  }
+  return options;
+}
+
+export async function lintCommand(opts: CliLintOptions = {}) {
   const repoRoot = process.cwd();
+  const config = loadConfig(repoRoot);
   const specs = loadSpecs(repoRoot);
-  const findings = lintSpecs(specs);
+  const findings = lintSpecs(specs, lintConfigToOptions(config.lint));
 
   if (opts.json) {
     console.log(
@@ -28,7 +51,9 @@ export async function lintCommand(opts: LintOptions = {}) {
   }
 
   if (findings.length === 0) {
-    console.log(chalk.green(`* No lint findings across ${specs.length} spec file(s).`));
+    console.log(
+      chalk.green(`* No lint findings across ${specs.length} spec file(s).`)
+    );
     return;
   }
 
@@ -41,7 +66,9 @@ export async function lintCommand(opts: LintOptions = {}) {
 
   console.log(`\nSPS Lint`);
   console.log(`========`);
-  console.log(`${findings.length} finding(s) across ${specs.length} spec file(s).\n`);
+  console.log(
+    `${findings.length} finding(s) across ${specs.length} spec file(s).\n`
+  );
 
   for (const [category, list] of byCategory) {
     const colorize = list[0].severity === "warn" ? chalk.yellow : chalk.dim;
