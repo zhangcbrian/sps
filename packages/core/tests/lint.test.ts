@@ -98,4 +98,43 @@ describe("lintSpecs", () => {
     ]);
     expect(findings.filter((f) => f.category === "missing_behavior_block")).toEqual([]);
   });
+
+  it("flags rules whose description contains a forbidden pattern", () => {
+    const findings = lintSpecs([
+      wrap([{ ...baseRule, description: "see #566 for context" }]),
+    ]);
+    expect(
+      findings.filter((f) => f.category === "forbidden_pattern_in_description")
+    ).toHaveLength(1);
+  });
+
+  it("emits one finding per rule even when multiple patterns match", () => {
+    const findings = lintSpecs([
+      wrap([{ ...baseRule, description: "see #566 and TKT-123 in Phase 2" }]),
+    ]);
+    expect(
+      findings.filter((f) => f.category === "forbidden_pattern_in_description")
+    ).toHaveLength(1);
+  });
+
+  it("does not scan notes for forbidden patterns", () => {
+    const findings = lintSpecs([
+      wrap([
+        { ...baseRule, description: "clean prose", notes: "history: see #566" },
+      ]),
+    ]);
+    expect(
+      findings.filter((f) => f.category === "forbidden_pattern_in_description")
+    ).toEqual([]);
+  });
+
+  it("respects empty forbiddenPatterns to disable the check", () => {
+    const findings = lintSpecs(
+      [wrap([{ ...baseRule, description: "see #566" }])],
+      { forbiddenPatterns: [] }
+    );
+    expect(
+      findings.filter((f) => f.category === "forbidden_pattern_in_description")
+    ).toEqual([]);
+  });
 });

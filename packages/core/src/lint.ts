@@ -9,17 +9,25 @@ export interface LintFinding {
     | "rule_too_long"
     | "spec_too_many_rules"
     | "missing_behavior_block"
-    | "stale_proposed";
+    | "stale_proposed"
+    | "forbidden_pattern_in_description"
+    | "spec_file_too_large";
   message: string;
 }
 
 export interface LintOptions {
-  /** Maximum word count in a rule's description before it's flagged. Default 200. */
+  /** Maximum word count in a rule's description before it's flagged. Default 100 (in upcoming change). */
   maxDescriptionWords?: number;
   /** Maximum rules in a single spec file before it's flagged for splitting. Default 30. */
   maxRulesPerSpec?: number;
+  /** Maximum on-disk line count for a spec file before it's flagged. Default 800. Set 0 to disable. */
+  maxSpecFileLines?: number;
+  /** Regex strings checked against rule descriptions. Default flags ticket/PR/phase references. Set [] to disable. */
+  forbiddenPatterns?: string[];
   /** Behavioral surface keywords that should usually carry a behavior block. */
   behavioralKeywords?: string[];
+  /** Test injection: bypass on-disk reads with explicit per-file line counts. Production omits. */
+  fileLineCounts?: Map<string, number>;
 }
 
 const DEFAULT_BEHAVIORAL_KEYWORDS = [
@@ -35,6 +43,8 @@ const DEFAULT_BEHAVIORAL_KEYWORDS = [
   "trigger",
 ];
 
+const DEFAULT_FORBIDDEN_PATTERNS = ["#\\d+", "TKT-\\d+", "Phase \\d+\\b"];
+
 export function lintSpecs(
   specs: SpecFile[],
   options: LintOptions = {}
@@ -44,6 +54,9 @@ export function lintSpecs(
   const keywords = (
     options.behavioralKeywords ?? DEFAULT_BEHAVIORAL_KEYWORDS
   ).map((k) => k.toLowerCase());
+  const forbiddenPatterns = (
+    options.forbiddenPatterns ?? DEFAULT_FORBIDDEN_PATTERNS
+  ).map((p) => new RegExp(p));
 
   const findings: LintFinding[] = [];
 
@@ -84,6 +97,20 @@ export function lintSpecs(
           severity: "info",
           category: "missing_behavior_block",
           message: `title suggests a behavioral surface but no \`behavior\` block. Consider adding one (surface, invariants, errors).`,
+        });
+      }
+
+      const matched = forbiddenPatterns.find((re) =>
+        re.test(rule.description ?? "")
+      );
+      if (matched) {
+        findings.push({
+          specFile: spec.filePath,
+          ruleId: rule.id,
+          rule: rule.title ?? "(untitled)",
+          severity: "warn",
+          category: "forbidden_pattern_in_description",
+          message: `description matches forbidden pattern /${matched.source}/. Move history to git/PR body or to \`notes\`.`,
         });
       }
     }
