@@ -107,6 +107,8 @@ lint:
     - 'TKT-\d+'
 ```
 
+> **Breaking in v0.3:** `max_description_words` default is now 100 (was 200). Restore prior behavior with `lint.max_description_words: 200` in `.sps/config.yaml`.
+
 ## Connect Specs to Tests
 
 Every rule gets a lineage ID (`REQ-CHECKOUT-COUPON-01`). Put it in your test:
