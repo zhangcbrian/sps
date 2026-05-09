@@ -54,4 +54,22 @@ describe("loadConfig", () => {
       DEFAULT_CONFIG.schema.required_rule_fields
     );
   });
+
+  it("loads a lint config block (snake_case fields)", () => {
+    const dir = mkdtempSync(join(tmpdir(), "sps-test-"));
+    mkdirSync(join(dir, ".sps"));
+    writeFileSync(
+      join(dir, ".sps/config.yaml"),
+      `version: 1
+lint:
+  max_description_words: 80
+  max_spec_file_lines: 0
+  forbidden_patterns: []
+`
+    );
+    const config = loadConfig(dir);
+    expect(config.lint?.max_description_words).toBe(80);
+    expect(config.lint?.max_spec_file_lines).toBe(0);
+    expect(config.lint?.forbidden_patterns).toEqual([]);
+  });
 });
