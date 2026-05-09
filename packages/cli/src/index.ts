@@ -20,7 +20,7 @@ program
   .description(
     "sls — turn natural language requirements into structured, traceable specs in git"
   )
-  .version("0.2.0");
+  .version("0.3.0");
 
 program
   .command("init")

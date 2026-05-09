@@ -1,6 +1,6 @@
 {
   "name": "@sls/core",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "sls core engine — interpret, deduplicate, validate, scan, coverage",
   "license": "MIT",
   "repository": {

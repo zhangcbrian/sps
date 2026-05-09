@@ -83,6 +83,30 @@ sps doctor                # All of the above in one check
 
 **Flags:** every command supports `--json`. `sps coverage --strict` and `sps validate --against=<ref>` are CI gates.
 
+### Lint Categories
+
+`sps lint` (configurable via `.sps/config.yaml` `lint:` block) flags:
+
+| Category | Default | Description |
+| --- | --- | --- |
+| `rule_too_long` | `> 100 words` | Rule descriptions creeping past a 1–3 sentence summary. Move history to `notes`. |
+| `spec_too_many_rules` | `> 30 rules` | One spec covering too many invariants — consider splitting. |
+| `spec_file_too_large` | `> 800 lines` | File has grown past the point where contracts usually diverge. |
+| `forbidden_pattern_in_description` | `#N`, `TKT-N`, `Phase N` | Ticket/PR/phase references in descriptions — belong in git history. |
+| `missing_behavior_block` | behavioral title | Title suggests a behavioral surface but no `behavior:` block. |
+
+Example override:
+
+```yaml
+# .sps/config.yaml
+lint:
+  max_description_words: 80
+  max_spec_file_lines: 1000
+  forbidden_patterns:
+    - '#\d+'
+    - 'TKT-\d+'
+```
+
 ## Connect Specs to Tests
 
 Every rule gets a lineage ID (`REQ-CHECKOUT-COUPON-01`). Put it in your test:

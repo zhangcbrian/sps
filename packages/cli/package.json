@@ -1,6 +1,6 @@
 {
   "name": "@sls/cli",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "sls CLI — sps binary for managing structured specs",
   "license": "MIT",
   "repository": {
