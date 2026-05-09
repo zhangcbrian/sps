@@ -1,6 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { lintSpecs } from "../src/lint.js";
 import type { SpecFile, SpecRule } from "../src/types.js";
+import { mkdtempSync, writeFileSync } from "fs";
+import { join } from "path";
+import { tmpdir } from "os";
 
 const baseRule: SpecRule = {
   id: "REQ-X-Y-01",
@@ -178,5 +181,30 @@ describe("lintSpecs", () => {
     expect(
       findings.filter((f) => f.category === "spec_file_too_large")
     ).toEqual([]);
+  });
+
+  it("counts on-disk lines using wc -l semantics (no off-by-one for trailing newline)", () => {
+    const dir = mkdtempSync(join(tmpdir(), "sps-lint-"));
+    const filePath = join(dir, "exactly-800.sps.yaml");
+    // 800 lines, each terminated with \n — wc -l reports 800.
+    writeFileSync(filePath, "x\n".repeat(800));
+    const spec = wrap([baseRule], filePath);
+    const findings = lintSpecs([spec]);
+    expect(
+      findings.filter((f) => f.category === "spec_file_too_large")
+    ).toEqual([]);
+  });
+
+  it("flags when on-disk lines exceed the threshold (wc -l semantics)", () => {
+    const dir = mkdtempSync(join(tmpdir(), "sps-lint-"));
+    const filePath = join(dir, "801-lines.sps.yaml");
+    writeFileSync(filePath, "x\n".repeat(801));
+    const spec = wrap([baseRule], filePath);
+    const findings = lintSpecs([spec]);
+    const matches = findings.filter(
+      (f) => f.category === "spec_file_too_large"
+    );
+    expect(matches).toHaveLength(1);
+    expect(matches[0].message).toContain("801 lines");
   });
 });

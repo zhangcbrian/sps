@@ -54,7 +54,10 @@ function getLineCount(
     return override.get(spec.filePath)!;
   }
   try {
-    return readFileSync(spec.filePath, "utf8").split("\n").length;
+    const text = readFileSync(spec.filePath, "utf8");
+    if (text.length === 0) return 0;
+    const lines = text.split("\n").length;
+    return text.endsWith("\n") ? lines - 1 : lines;
   } catch {
     return 0;
   }
