@@ -5,7 +5,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/zhangcbrian/sls.git",
+    "url": "https://github.com/zhangcbrian/sps.git",
     "directory": "packages/cli"
   },
   "type": "module",
@@ -20,6 +20,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "prepublishOnly": "tsc",
     "test": "vitest run",
     "test:watch": "vitest",
     "dev": "tsx src/index.ts"
