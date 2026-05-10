@@ -174,9 +174,9 @@ src/
 
 | Package | What |
 |---------|------|
-| `@sps/core` | Engine: interpret, deduplicate, validate, scan, coverage, agent |
-| `@sps/cli` | `sps` binary — all commands above |
-| `@sps/portal` | Next.js web UI — submit, browse, review specs as readable cards |
+| `@zhangcbrian/sps-core` | Engine: interpret, deduplicate, validate, scan, coverage, agent |
+| `@zhangcbrian/sps-cli` | `sps` binary — all commands above |
+| `@zhangcbrian/sps-portal` | Next.js web UI — submit, browse, review specs as readable cards |
 
 ## License
 

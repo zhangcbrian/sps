@@ -1,6 +1,6 @@
 {
-  "name": "@sps/cli",
-  "version": "0.3.0",
+  "name": "@zhangcbrian/sps-cli",
+  "version": "0.3.1",
   "description": "sps CLI — sps binary for managing structured specs",
   "license": "MIT",
   "repository": {
@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
-    "@sps/core": "workspace:*",
+    "@zhangcbrian/sps-core": "workspace:*",
     "chalk": "^5.4.0",
     "commander": "^13.0.0",
     "yaml": "^2.8.3",

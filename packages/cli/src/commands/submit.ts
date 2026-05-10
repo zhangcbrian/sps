@@ -1,4 +1,4 @@
-import { submitRequirement, submitDraftFile } from "@sps/core";
+import { submitRequirement, submitDraftFile } from "@zhangcbrian/sps-core";
 import chalk from "chalk";
 import { createInterface } from "readline";
 

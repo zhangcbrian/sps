@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, writeFileSync, chmodSync, readFileSync } from "fs";
 import { join } from "path";
 import { stringify } from "yaml";
-import { DEFAULT_CONFIG } from "@sps/core";
+import { DEFAULT_CONFIG } from "@zhangcbrian/sps-core";
 import chalk from "chalk";
 
 interface InitOptions {
@@ -26,7 +26,7 @@ jobs:
         with:
           node-version: "24"
       - name: Install sps
-        run: npm i -g @sps/cli
+        run: npm i -g @zhangcbrian/sps-cli
       - name: Validate specs
         run: sps validate --strict-touches --against=origin/\${{ github.base_ref || 'main' }}
       - name: Coverage

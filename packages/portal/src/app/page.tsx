@@ -1,5 +1,5 @@
-import { loadConfig, loadSpecs, loadPrinciples } from "@sps/core";
-import type { SpecRule, CategoryConfig } from "@sps/core";
+import { loadConfig, loadSpecs, loadPrinciples } from "@zhangcbrian/sps-core";
+import type { SpecRule, CategoryConfig } from "@zhangcbrian/sps-core";
 import { SpecCard } from "@/components/spec-card";
 
 function getRepoRoot(): string {

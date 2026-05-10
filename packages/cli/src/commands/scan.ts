@@ -1,4 +1,4 @@
-import { loadConfig, loadSpecs, buildManifest } from "@sps/core";
+import { loadConfig, loadSpecs, buildManifest } from "@zhangcbrian/sps-core";
 import { writeFileSync, mkdirSync } from "fs";
 import { join } from "path";
 import { stringify } from "yaml";

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { submitRequirement } from "@sps/core";
+import { submitRequirement } from "@zhangcbrian/sps-core";
 
 function getRepoRoot(): string {
   return process.env.SPS_REPO || process.cwd();

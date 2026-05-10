@@ -6,8 +6,8 @@ import {
   validateUniqueness,
   validateCrossRefs,
   validateMutations,
-} from "@sps/core";
-import type { MutationError } from "@sps/core";
+} from "@zhangcbrian/sps-core";
+import type { MutationError } from "@zhangcbrian/sps-core";
 import chalk from "chalk";
 
 interface ValidateOptions {
