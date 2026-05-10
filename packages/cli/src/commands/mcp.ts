@@ -5,8 +5,8 @@ import {
   loadPrinciples,
   analyzeCoverage,
   diffSpecs,
-} from "@sps/core";
-import type { SpecFile, SpecRule } from "@sps/core";
+} from "@zhangcbrian/sps-core";
+import type { SpecFile, SpecRule } from "@zhangcbrian/sps-core";
 import { z } from "zod";
 
 interface RuleSummary {

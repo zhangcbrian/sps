@@ -6,9 +6,9 @@ pnpm monorepo with three packages:
 
 ```
 packages/
-  core/     @sps/core    — shared library (TypeScript)
-  cli/      @sps/cli     — terminal interface (Commander); ships the `sps` bin
-  portal/   @sps/portal  — web UI (Next.js 15, React 19)
+  core/     @zhangcbrian/sps-core    — shared library (TypeScript)
+  cli/      @zhangcbrian/sps-cli     — terminal interface (Commander); ships the `sps` bin
+  portal/   @zhangcbrian/sps-portal  — web UI (Next.js 15, React 19)
 ```
 
 ## Commands

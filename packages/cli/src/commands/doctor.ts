@@ -9,7 +9,7 @@ import {
   validateUniqueness,
   validateCrossRefs,
   lintSpecs,
-} from "@sps/core";
+} from "@zhangcbrian/sps-core";
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "fs";
 import { join } from "path";
 import { stringify } from "yaml";

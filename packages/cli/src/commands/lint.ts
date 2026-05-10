@@ -1,5 +1,5 @@
-import { loadConfig, loadSpecs, lintSpecs } from "@sps/core";
-import type { LintConfig, LintOptions } from "@sps/core";
+import { loadConfig, loadSpecs, lintSpecs } from "@zhangcbrian/sps-core";
+import type { LintConfig, LintOptions } from "@zhangcbrian/sps-core";
 import chalk from "chalk";
 
 interface CliLintOptions {

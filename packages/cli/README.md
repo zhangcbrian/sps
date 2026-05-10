@@ -1,13 +1,13 @@
-# @sps/cli
+# @zhangcbrian/sps-cli
 
 The `sps` command-line interface — manage structured specs co-located with your code.
 
 ## Install
 
 ```bash
-npm install -g @sps/cli
+npm install -g @zhangcbrian/sps-cli
 # or one-off
-npx @sps/cli init
+npx @zhangcbrian/sps-cli init
 ```
 
 ## Quick start

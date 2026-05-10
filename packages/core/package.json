@@ -1,6 +1,6 @@
 {
-  "name": "@sps/core",
-  "version": "0.3.0",
+  "name": "@zhangcbrian/sps-core",
+  "version": "0.3.1",
   "description": "sps core engine — interpret, deduplicate, validate, scan, coverage",
   "license": "MIT",
   "repository": {
